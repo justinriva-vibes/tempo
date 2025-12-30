@@ -442,10 +442,34 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
 
         {step === 1 && (
           <>
+            <button
+              onClick={() => {
+                setShowHighImpactHelp(false);
+                setShowLowImpactHelp(false);
+                setStep(0);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 0',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: colors.textSecondary,
+                fontSize: '14px',
+                cursor: 'pointer',
+                marginBottom: '16px',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
             <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: '32px' }}>
               What's the impact?
             </h2>
-            
+
             {/* High Impact Option */}
             <div style={{ marginBottom: '12px' }}>
               <div
