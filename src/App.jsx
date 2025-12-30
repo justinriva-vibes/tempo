@@ -91,7 +91,15 @@ function rankTasks(tasks) {
   });
 
   ranked.sort((a, b) => {
+    // Primary: Sort by score
     if (b.score !== a.score) return b.score - a.score;
+
+    // Secondary: Sort by deadline urgency
+    const deadlineOrder = { today: 0, this_week: 1, this_sprint: 2, after_sprint: 3 };
+    const deadlineDiff = deadlineOrder[a.deadline] - deadlineOrder[b.deadline];
+    if (deadlineDiff !== 0) return deadlineDiff;
+
+    // Tertiary: Sort by creation time
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
