@@ -1349,15 +1349,22 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 // Daily Review Modal Component
 const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll }) => {
   const [reviewedTasks, setReviewedTasks] = useState(new Set());
+  const [updatingDeadlineFor, setUpdatingDeadlineFor] = useState(null);
 
   const handleComplete = (taskId) => {
     setReviewedTasks(new Set([...reviewedTasks, taskId]));
     onComplete(taskId);
   };
 
-  const handleReAdd = (taskId) => {
+  const handleKeepTask = (taskId) => {
     setReviewedTasks(new Set([...reviewedTasks, taskId]));
-    onReAdd(taskId);
+    onReAdd(taskId, null); // null means keep current deadline
+  };
+
+  const handleUpdateDeadline = (taskId, newDeadline) => {
+    setReviewedTasks(new Set([...reviewedTasks, taskId]));
+    setUpdatingDeadlineFor(null);
+    onReAdd(taskId, newDeadline);
   };
 
   const handleDismiss = (taskId) => {
@@ -1366,6 +1373,13 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
   };
 
   const remainingTasks = tasks.filter(t => !reviewedTasks.has(t.id));
+
+  const deadlineOptions = [
+    { value: 'today', label: 'Today', desc: 'Must be done today' },
+    { value: 'this_week', label: 'This week', desc: 'Due within the next few days' },
+    { value: 'this_sprint', label: 'This sprint', desc: 'Due before the sprint ends' },
+    { value: 'after_sprint', label: 'After this sprint / No deadline', desc: 'Can wait or has no hard deadline' },
+  ];
 
   if (remainingTasks.length === 0) {
     return null;
@@ -1437,52 +1451,106 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
               }}>
                 {task.reason}
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => handleComplete(task.id)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: colors.accentGreen,
-                    color: colors.bgPrimary,
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Mark complete
-                </button>
-                <button
-                  onClick={() => handleReAdd(task.id)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: colors.accentBlue,
-                    color: colors.textPrimary,
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Re-add today
-                </button>
-                <button
-                  onClick={() => handleDismiss(task.id)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    color: colors.textSecondary,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Delete task
-                </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => handleComplete(task.id)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: colors.accentGreen,
+                      color: colors.bgPrimary,
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Mark complete
+                  </button>
+                  <button
+                    onClick={() => handleKeepTask(task.id)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: colors.accentBlue,
+                      color: colors.textPrimary,
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Keep task
+                  </button>
+                  <button
+                    onClick={() => setUpdatingDeadlineFor(task.id)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: updatingDeadlineFor === task.id ? colors.bgHover : 'transparent',
+                      color: colors.accentBlue,
+                      border: `1px solid ${colors.accentBlue}`,
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Keep task - update deadline
+                  </button>
+                  <button
+                    onClick={() => handleDismiss(task.id)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: 'transparent',
+                      color: colors.textSecondary,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete task
+                  </button>
+                </div>
+
+                {/* Inline deadline selector */}
+                {updatingDeadlineFor === task.id && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    paddingTop: '8px',
+                    borderTop: `1px solid ${colors.border}`,
+                  }}>
+                    <div style={{ color: colors.textSecondary, fontSize: '13px', fontWeight: 600 }}>
+                      Select new deadline:
+                    </div>
+                    {deadlineOptions.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleUpdateDeadline(task.id, opt.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          backgroundColor: task.deadline === opt.value ? colors.bgHover : colors.bgSurface,
+                          border: `2px solid ${task.deadline === opt.value ? colors.accentGreen : colors.border}`,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <div style={{ color: colors.textPrimary, fontWeight: 600, fontSize: '14px' }}>
+                          {opt.label}
+                        </div>
+                        <div style={{ color: colors.textSecondary, fontSize: '13px', marginTop: '2px' }}>
+                          {opt.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -1693,9 +1761,16 @@ export default function PriorityApp() {
     }
   };
 
-  const handleReviewReAdd = (taskId) => {
-    // Task stays in the list, just close the review for this task
-    // The task is already in the tasks array, no action needed
+  const handleReviewReAdd = (taskId, newDeadline) => {
+    // If newDeadline is provided, update the task's deadline
+    if (newDeadline !== null) {
+      const updatedTasks = tasks.map(t =>
+        t.id === taskId ? { ...t, deadline: newDeadline } : t
+      );
+      setTasks(updatedTasks);
+      setRankedTasks(rankTasks(updatedTasks));
+    }
+    // Otherwise, task stays in the list as-is
 
     // Check if all tasks have been reviewed
     const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
