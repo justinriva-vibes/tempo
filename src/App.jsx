@@ -1532,6 +1532,15 @@ export default function PriorityApp() {
       const today = new Date().toDateString();
       const isNewDay = lastLoginDate && lastLoginDate !== today;
 
+      // Debug logging
+      console.log('Daily Review Debug:', {
+        today,
+        lastLoginDate,
+        isNewDay,
+        hasTasks: savedTasks ? JSON.parse(savedTasks).length : 0,
+        hasVisited,
+      });
+
       if (savedTasks) {
         const parsed = JSON.parse(savedTasks);
         // Restore Date objects
@@ -1561,8 +1570,12 @@ export default function PriorityApp() {
         setCompletedTasks(restored);
       }
 
-      // Update last login date
-      localStorage.setItem('tempo_last_login_date', today);
+      // Only update last login date if we're NOT showing the review modal
+      // (it will be updated after the user completes the review)
+      const shouldShowReview = isNewDay && savedTasks && JSON.parse(savedTasks).length > 0 && hasVisited;
+      if (!shouldShowReview) {
+        localStorage.setItem('tempo_last_login_date', today);
+      }
 
       // Skip welcome screen if user has visited before
       if (hasVisited) {
@@ -1670,11 +1683,27 @@ export default function PriorityApp() {
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
     setRankedTasks(rankTasks(updatedTasks));
+
+    // Check if all tasks have been reviewed
+    const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
+    if (remainingToReview.length === 0) {
+      setShowDailyReview(false);
+      setTasksToReview([]);
+      localStorage.setItem('tempo_last_login_date', new Date().toDateString());
+    }
   };
 
   const handleReviewReAdd = (taskId) => {
     // Task stays in the list, just close the review for this task
     // The task is already in the tasks array, no action needed
+
+    // Check if all tasks have been reviewed
+    const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
+    if (remainingToReview.length === 0) {
+      setShowDailyReview(false);
+      setTasksToReview([]);
+      localStorage.setItem('tempo_last_login_date', new Date().toDateString());
+    }
   };
 
   const handleReviewDismiss = (taskId) => {
@@ -1682,6 +1711,14 @@ export default function PriorityApp() {
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
     setRankedTasks(rankTasks(updatedTasks));
+
+    // Check if all tasks have been reviewed
+    const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
+    if (remainingToReview.length === 0) {
+      setShowDailyReview(false);
+      setTasksToReview([]);
+      localStorage.setItem('tempo_last_login_date', new Date().toDateString());
+    }
   };
 
   const handleReviewDismissAll = () => {
@@ -1690,6 +1727,7 @@ export default function PriorityApp() {
     setRankedTasks([]);
     setShowDailyReview(false);
     setTasksToReview([]);
+    localStorage.setItem('tempo_last_login_date', new Date().toDateString());
   };
 
   // Don't render until localStorage is loaded
