@@ -776,9 +776,14 @@ const DeadlineBadge = ({ deadline }) => {
 };
 
 // Task Card Component
-const TaskCard = ({ task, onComplete }) => {
+const TaskCard = ({ task, onComplete, onUpdate }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(task.name);
+  const [editImpact, setEditImpact] = useState(task.impact);
+  const [editEffort, setEditEffort] = useState(task.effort);
+  const [editDeadline, setEditDeadline] = useState(task.deadline);
   const tier = tierConfig[task.tier];
 
   const handleComplete = () => {
@@ -786,97 +791,334 @@ const TaskCard = ({ task, onComplete }) => {
     setTimeout(() => onComplete?.(task.id), 300);
   };
 
+  const handleEdit = () => {
+    setEditName(task.name);
+    setEditImpact(task.impact);
+    setEditEffort(task.effort);
+    setEditDeadline(task.deadline);
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (editName.trim().length === 0) return; // Prevent empty names
+    onUpdate?.(task.id, {
+      name: editName,
+      impact: editImpact,
+      effort: editEffort,
+      deadline: editDeadline,
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const deadlineOptions = [
+    { value: 'today', label: 'Today', desc: 'Must be done today' },
+    { value: 'this_week', label: 'This week', desc: 'Due within the next few days' },
+    { value: 'this_sprint', label: 'This sprint', desc: 'Due before the sprint ends' },
+    { value: 'after_sprint', label: 'After this sprint / No deadline', desc: 'Can wait or has no hard deadline' },
+  ];
+
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
         display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
+        flexDirection: 'column',
         padding: '16px',
         backgroundColor: isHovered ? colors.bgHover : colors.bgSurface,
         borderRadius: '8px',
         borderLeft: `4px solid ${tier.color}`,
-        cursor: 'pointer',
         transition: 'all 0.2s ease',
-        transform: isHovered ? 'translateX(4px)' : 'none',
         opacity: isCompleted ? 0.5 : 1,
       }}
     >
-      {/* Rank number */}
       <div style={{
-        width: '24px',
-        textAlign: 'center',
-        color: colors.textDim,
-        fontSize: '14px',
-        fontWeight: 600,
-        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
       }}>
-        {task.rank}
-      </div>
-
-      <div
-        onClick={handleComplete}
-        style={{
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          border: `2px solid ${isCompleted ? colors.accentGreen : colors.textSecondary}`,
-          backgroundColor: isCompleted ? colors.accentGreen : 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          transition: 'all 0.2s ease',
-        }}
-      >
-        {isCompleted && (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
-      </div>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Rank number */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '4px',
+          width: '24px',
+          textAlign: 'center',
+          color: colors.textDim,
+          fontSize: '14px',
+          fontWeight: 600,
+          flexShrink: 0,
         }}>
-          <span style={{
-            color: colors.textPrimary,
-            fontSize: '16px',
-            fontWeight: 600,
-            textDecoration: isCompleted ? 'line-through' : 'none',
-          }}>
-            {task.name}
-          </span>
-          <DeadlineBadge deadline={task.deadline} />
+          {task.rank}
         </div>
-        <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
-          {task.reason}
+
+        <div
+          onClick={handleComplete}
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            border: `2px solid ${isCompleted ? colors.accentGreen : colors.textSecondary}`,
+            backgroundColor: isCompleted ? colors.accentGreen : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+          }}
+        >
+          {isCompleted && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '4px',
+          }}>
+            <span style={{
+              color: colors.textPrimary,
+              fontSize: '16px',
+              fontWeight: 600,
+              textDecoration: isCompleted ? 'line-through' : 'none',
+            }}>
+              {task.name}
+            </span>
+            <DeadlineBadge deadline={task.deadline} />
+            {/* Edit icon - always visible */}
+            <button
+              onClick={handleEdit}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+          </div>
+          <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            {task.reason}
+          </div>
+        </div>
+
+        <div style={{
+          padding: '6px 12px',
+          backgroundColor: colors.bgPrimary,
+          borderRadius: '16px',
+          fontSize: '13px',
+          color: colors.textDim,
+          fontWeight: 600,
+          flexShrink: 0,
+        }}>
+          {task.score}
         </div>
       </div>
 
-      <div style={{
-        padding: '6px 12px',
-        backgroundColor: colors.bgPrimary,
-        borderRadius: '16px',
-        fontSize: '13px',
-        color: colors.textDim,
-        fontWeight: 600,
-        flexShrink: 0,
-      }}>
-        {task.score}
-      </div>
+      {/* Inline edit form */}
+      {isEditing && (
+        <div style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: `1px solid ${colors.border}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}>
+          {/* Task name input */}
+          <div>
+            <div style={{ color: colors.textSecondary, fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+              Task name
+            </div>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: colors.bgPrimary,
+                border: `2px solid ${colors.border}`,
+                borderRadius: '8px',
+                color: colors.textPrimary,
+                fontSize: '14px',
+                boxSizing: 'border-box',
+                outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* Impact selector */}
+          <div>
+            <div style={{ color: colors.textSecondary, fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+              Impact
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setEditImpact('high')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: editImpact === 'high' ? colors.bgHover : colors.bgPrimary,
+                  border: `2px solid ${editImpact === 'high' ? colors.accentGreen : colors.border}`,
+                  borderRadius: '8px',
+                  color: colors.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                High impact
+              </button>
+              <button
+                onClick={() => setEditImpact('low')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: editImpact === 'low' ? colors.bgHover : colors.bgPrimary,
+                  border: `2px solid ${editImpact === 'low' ? colors.accentGreen : colors.border}`,
+                  borderRadius: '8px',
+                  color: colors.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Low impact
+              </button>
+            </div>
+          </div>
+
+          {/* Effort selector */}
+          <div>
+            <div style={{ color: colors.textSecondary, fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+              Effort
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setEditEffort('low')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: editEffort === 'low' ? colors.bgHover : colors.bgPrimary,
+                  border: `2px solid ${editEffort === 'low' ? colors.accentGreen : colors.border}`,
+                  borderRadius: '8px',
+                  color: colors.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Low effort
+              </button>
+              <button
+                onClick={() => setEditEffort('high')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: editEffort === 'high' ? colors.bgHover : colors.bgPrimary,
+                  border: `2px solid ${editEffort === 'high' ? colors.accentGreen : colors.border}`,
+                  borderRadius: '8px',
+                  color: colors.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                High effort
+              </button>
+            </div>
+          </div>
+
+          {/* Deadline selector */}
+          <div>
+            <div style={{ color: colors.textSecondary, fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+              Deadline
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {deadlineOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setEditDeadline(opt.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: editDeadline === opt.value ? colors.bgHover : colors.bgPrimary,
+                    border: `2px solid ${editDeadline === opt.value ? colors.accentGreen : colors.border}`,
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ color: colors.textPrimary, fontWeight: 600, fontSize: '14px' }}>
+                    {opt.label}
+                  </div>
+                  <div style={{ color: colors.textSecondary, fontSize: '13px', marginTop: '2px' }}>
+                    {opt.desc}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <button
+              onClick={handleSave}
+              style={{
+                flex: 1,
+                padding: '12px',
+                backgroundColor: colors.accentGreen,
+                color: colors.bgPrimary,
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Save changes
+            </button>
+            <button
+              onClick={handleCancel}
+              style={{
+                flex: 1,
+                padding: '12px',
+                backgroundColor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // Tier Section Component
-const TierSection = ({ tier, tasks, onComplete }) => {
+const TierSection = ({ tier, tasks, onComplete, onUpdate }) => {
   const config = tierConfig[tier];
   if (tasks.length === 0) return null;
 
@@ -921,7 +1163,7 @@ const TierSection = ({ tier, tasks, onComplete }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onComplete={onComplete} />
+          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdate} />
         ))}
       </div>
     </div>
@@ -1119,7 +1361,7 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onUpdateTask }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -1257,11 +1499,11 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
         {showLegend && <ScoringLegend />}
 
         <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: '24px' }}>
-          <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} />
-          <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} />
-          <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} />
-          <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} />
-          
+          <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} />
+          <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} onUpdate={onUpdateTask} />
+          <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} onUpdate={onUpdateTask} />
+          <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} onUpdate={onUpdateTask} />
+
           <CompletedSection tasks={completedTasks} onUncomplete={onUncomplete} />
         </div>
 
@@ -1816,6 +2058,14 @@ export default function PriorityApp() {
     setScreen('addTask');
   };
 
+  const handleUpdateTask = (taskId, updates) => {
+    const updatedTasks = tasks.map(t =>
+      t.id === taskId ? { ...t, ...updates } : t
+    );
+    setTasks(updatedTasks);
+    setRankedTasks(rankTasks(updatedTasks));
+  };
+
   const handleClearAllData = () => {
     setTasks([]);
     setRankedTasks([]);
@@ -1932,6 +2182,7 @@ export default function PriorityApp() {
           onUncomplete={handleUncomplete}
           onAddTask={handleAddFromDashboard}
           onClearAllData={handleClearAllData}
+          onUpdateTask={handleUpdateTask}
         />
       )}
 
