@@ -1195,7 +1195,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
 };
 
 // Tier Section Component
-const TierSection = ({ tier, tasks, onComplete, onUpdate }) => {
+const TierSection = ({ tier, tasks, onComplete, onUpdate, onDelete }) => {
   const config = tierConfig[tier];
   if (tasks.length === 0) return null;
 
@@ -1240,7 +1240,7 @@ const TierSection = ({ tier, tasks, onComplete, onUpdate }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
+          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdate} onDelete={onDelete} />
         ))}
       </div>
     </div>
@@ -1618,10 +1618,10 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
         {showLegend && <ScoringLegend />}
 
         <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: '24px' }}>
-          <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} />
-          <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} onUpdate={onUpdateTask} />
-          <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} onUpdate={onUpdateTask} />
-          <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} onUpdate={onUpdateTask} />
+          <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
+          <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
+          <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
+          <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
 
           <CompletedSection tasks={completedTasks} onUncomplete={onUncomplete} />
         </div>
