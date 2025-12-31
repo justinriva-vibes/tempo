@@ -1254,7 +1254,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           {tasks.length > 0 && (
             <button
               onClick={() => {
-                setTasksToReview(tasks);
+                setTasksToReview(rankedTasks);
                 setShowDailyReview(true);
               }}
               style={{
