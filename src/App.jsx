@@ -1369,11 +1369,6 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll }) => {
   const [reviewedTasks, setReviewedTasks] = useState(new Set());
 
-  // Reset reviewedTasks when the tasks list changes (modal reopens)
-  useEffect(() => {
-    setReviewedTasks(new Set());
-  }, [tasks]);
-
   const handleComplete = (taskId) => {
     setReviewedTasks(new Set([...reviewedTasks, taskId]));
     onComplete(taskId);
