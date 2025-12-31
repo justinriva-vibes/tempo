@@ -1470,7 +1470,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '12px 20px',
+                  padding: '12px 24px',
                   backgroundColor: 'transparent',
                   color: colors.textSecondary,
                   border: `1px solid ${colors.border}`,
@@ -1480,7 +1480,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   cursor: 'pointer',
                 }}
               >
-                Archive ({archivedTasksCount})
+                Completed Archive ({archivedTasksCount})
               </button>
             )}
             <button
@@ -1761,7 +1761,7 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
               cursor: 'pointer',
             }}
           >
-            Restore to completed
+            Restore to dashboard
           </button>
           {deletingTaskId !== task.id ? (
             <button
@@ -1903,7 +1903,7 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
           margin: 0,
           marginBottom: '8px',
         }}>
-          Archive
+          Completed Archive
         </h1>
         <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '32px' }}>
           {archivedTasks.length} {archivedTasks.length === 1 ? 'task' : 'tasks'} archived
