@@ -1291,7 +1291,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   backgroundColor: 'transparent',
                   border: 'none',
                   color: colors.textDim,
-                  fontSize: '13px',
+                  fontSize: '19.5px',
                   cursor: 'pointer',
                   padding: '8px 16px',
                 }}
