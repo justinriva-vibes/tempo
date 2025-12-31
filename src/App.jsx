@@ -1119,7 +1119,7 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onReviewTasks }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -1253,10 +1253,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           </button>
           {tasks.length > 0 && (
             <button
-              onClick={() => {
-                setTasksToReview(rankedTasks);
-                setShowDailyReview(true);
-              }}
+              onClick={onReviewTasks}
               style={{
                 padding: '8px 16px',
                 backgroundColor: 'transparent',
@@ -1371,6 +1368,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
 
   // Reset reviewedTasks when the tasks list changes (modal reopens)
   useEffect(() => {
+    console.log('DailyReviewModal: tasks changed, resetting reviewedTasks', tasks);
     setReviewedTasks(new Set());
   }, [tasks]);
 
@@ -1390,6 +1388,12 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
   };
 
   const remainingTasks = tasks.filter(t => !reviewedTasks.has(t.id));
+
+  console.log('DailyReviewModal render:', {
+    totalTasks: tasks.length,
+    reviewedCount: reviewedTasks.size,
+    remainingCount: remainingTasks.length,
+  });
 
   if (remainingTasks.length === 0) {
     return null;
@@ -1754,6 +1758,12 @@ export default function PriorityApp() {
     localStorage.setItem('tempo_last_login_date', new Date().toDateString());
   };
 
+  const handleOpenReviewModal = () => {
+    console.log('Opening review modal with rankedTasks:', rankedTasks.length);
+    setTasksToReview(rankedTasks);
+    setShowDailyReview(true);
+  };
+
   // Don't render until localStorage is loaded
   if (!isLoaded) {
     return (
@@ -1796,6 +1806,7 @@ export default function PriorityApp() {
           onUncomplete={handleUncomplete}
           onAddTask={handleAddFromDashboard}
           onClearAllData={handleClearAllData}
+          onReviewTasks={handleOpenReviewModal}
         />
       )}
 
