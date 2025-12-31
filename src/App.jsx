@@ -1502,7 +1502,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
             cursor: 'pointer',
           }}
         >
-          Dismiss all and start fresh
+          Delete all tasks and start fresh
         </button>
       </div>
     </div>
