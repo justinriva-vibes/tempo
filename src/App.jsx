@@ -1582,7 +1582,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                       padding: '8px 16px',
                     }}
                   >
-                    Clear completed
+                    Archive all completed tasks
                   </button>
                 )}
                 <button
