@@ -1381,7 +1381,7 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onViewArchive, archivedTasksCount }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -1462,25 +1462,47 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
               )}
             </div>
           </div>
-          <button
-            onClick={onAddTask}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 24px',
-              backgroundColor: colors.accentGreen,
-              color: colors.bgPrimary,
-              border: 'none',
-              borderRadius: '24px',
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontSize: '20px' }}>+</span>
-            ADD TASK
-          </button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {archivedTasksCount > 0 && (
+              <button
+                onClick={onViewArchive}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  backgroundColor: 'transparent',
+                  color: colors.textSecondary,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '24px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Archive ({archivedTasksCount})
+              </button>
+            )}
+            <button
+              onClick={onAddTask}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 24px',
+                backgroundColor: colors.accentGreen,
+                color: colors.bgPrimary,
+                border: 'none',
+                borderRadius: '24px',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>+</span>
+              ADD TASK
+            </button>
+          </div>
         </div>
 
         {/* Toggle buttons */}
@@ -1574,7 +1596,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     padding: '8px 16px',
                   }}
                 >
-                  Delete all tasks
+                  Delete all active tasks
                 </button>
               </div>
             ) : (
@@ -1619,6 +1641,291 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
               </div>
             )}
           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Archive Screen
+const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) => {
+  const [deletingTaskId, setDeletingTaskId] = useState(null);
+
+  // Group tasks by date
+  const groupTasksByDate = (tasks) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    return {
+      today: tasks.filter(t => new Date(t.archivedAt) >= today),
+      yesterday: tasks.filter(t => {
+        const archived = new Date(t.archivedAt);
+        return archived >= yesterday && archived < today;
+      }),
+      thisWeek: tasks.filter(t => {
+        const archived = new Date(t.archivedAt);
+        return archived >= weekAgo && archived < yesterday;
+      }),
+      older: tasks.filter(t => new Date(t.archivedAt) < weekAgo),
+    };
+  };
+
+  const groupedTasks = groupTasksByDate(archivedTasks);
+
+  const ArchivedTaskCard = ({ task }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const formatDateTime = (date) => {
+      const d = new Date(date);
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      const dayName = days[d.getDay()];
+      const monthName = months[d.getMonth()];
+      const dayNum = d.getDate();
+
+      const suffix = (date) => {
+        if (date > 3 && date < 21) return 'th';
+        switch (date % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+
+      const time = d.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
+      return `${dayName}, ${monthName} ${dayNum}${suffix(dayNum)} ${time}`;
+    };
+
+    return (
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '16px',
+          backgroundColor: isHovered ? colors.bgHover : colors.bgSurface,
+          borderRadius: '8px',
+          borderLeft: `4px solid ${tierConfig[task.tier]?.color || colors.textDim}`,
+          transition: 'all 0.2s ease',
+          marginBottom: '8px',
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px',
+          marginBottom: '12px',
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              color: colors.textPrimary,
+              fontSize: '16px',
+              fontWeight: 600,
+              marginBottom: '4px',
+            }}>
+              {task.name}
+            </div>
+            <div style={{ color: colors.textSecondary, fontSize: '13px', marginBottom: '4px' }}>
+              Completed: {formatDateTime(task.completedAt)}
+            </div>
+            <div style={{ color: colors.textDim, fontSize: '13px' }}>
+              Archived: {formatDateTime(task.archivedAt)}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => onRestore(task.id)}
+            style={{
+              flex: 1,
+              padding: '10px',
+              backgroundColor: colors.accentBlue,
+              color: colors.textPrimary,
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Restore to completed
+          </button>
+          {deletingTaskId !== task.id ? (
+            <button
+              onClick={() => setDeletingTaskId(task.id)}
+              style={{
+                flex: 1,
+                padding: '10px',
+                backgroundColor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Delete permanently
+            </button>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setDeletingTaskId(null)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: 'transparent',
+                  color: colors.textSecondary,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onPermanentDelete(task.id);
+                  setDeletingTaskId(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: colors.urgent,
+                  color: colors.textPrimary,
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const DateGroupSection = ({ title, tasks }) => {
+    if (tasks.length === 0) return null;
+
+    return (
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '16px',
+        }}>
+          <div style={{
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            backgroundColor: colors.textSecondary,
+          }} />
+          <span style={{
+            color: colors.textSecondary,
+            fontSize: '12px',
+            fontWeight: 700,
+            letterSpacing: '1.5px',
+          }}>
+            {title.toUpperCase()}
+          </span>
+          <span style={{ color: colors.textDim, fontSize: '12px' }}>
+            · {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+          </span>
+        </div>
+        <div>
+          {tasks.map(task => (
+            <ArchivedTaskCard key={task.id} task={task} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: colors.bgPrimary,
+      padding: '40px',
+    }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '32px',
+        }}>
+          <button
+            onClick={onBack}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: colors.textSecondary,
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to dashboard
+          </button>
+        </div>
+
+        <h1 style={{
+          color: colors.textPrimary,
+          fontSize: '32px',
+          fontWeight: 700,
+          margin: 0,
+          marginBottom: '8px',
+        }}>
+          Archive
+        </h1>
+        <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '32px' }}>
+          {archivedTasks.length} {archivedTasks.length === 1 ? 'task' : 'tasks'} archived
+        </div>
+
+        {/* Content */}
+        {archivedTasks.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '64px 20px',
+            color: colors.textSecondary,
+            fontSize: '16px',
+          }}>
+            No archived tasks yet. Cleared completed tasks will appear here.
+          </div>
+        ) : (
+          <>
+            <DateGroupSection title="Today" tasks={groupedTasks.today} />
+            <DateGroupSection title="Yesterday" tasks={groupedTasks.yesterday} />
+            <DateGroupSection title="This Week" tasks={groupedTasks.thisWeek} />
+            <DateGroupSection title="Older" tasks={groupedTasks.older} />
+          </>
         )}
       </div>
     </div>
@@ -1948,6 +2255,7 @@ export default function PriorityApp() {
   const [tasks, setTasks] = useState([]);
   const [rankedTasks, setRankedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [archivedTasks, setArchivedTasks] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showDailyReview, setShowDailyReview] = useState(false);
   const [tasksToReview, setTasksToReview] = useState([]);
@@ -2002,6 +2310,18 @@ export default function PriorityApp() {
         setCompletedTasks(restored);
       }
 
+      const savedArchivedTasks = localStorage.getItem('tempo_archived_tasks');
+      if (savedArchivedTasks) {
+        const parsed = JSON.parse(savedArchivedTasks);
+        const restored = parsed.map(t => ({
+          ...t,
+          createdAt: new Date(t.createdAt),
+          completedAt: new Date(t.completedAt),
+          archivedAt: new Date(t.archivedAt),
+        }));
+        setArchivedTasks(restored);
+      }
+
       // Only update last login date if we're NOT showing the review modal
       // (it will be updated after the user completes the review)
       const shouldShowReview = isNewDay && savedTasks && JSON.parse(savedTasks).length > 0 && hasVisited;
@@ -2044,6 +2364,17 @@ export default function PriorityApp() {
       }
     }
   }, [completedTasks, isLoaded]);
+
+  // Save archived tasks to localStorage when they change
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        localStorage.setItem('tempo_archived_tasks', JSON.stringify(archivedTasks));
+      } catch (e) {
+        console.error('Failed to save archived tasks:', e);
+      }
+    }
+  }, [archivedTasks, isLoaded]);
 
   // Mark that user has visited (after they leave welcome screen)
   useEffect(() => {
@@ -2095,6 +2426,27 @@ export default function PriorityApp() {
     setScreen('addTask');
   };
 
+  const handleViewArchive = () => {
+    setScreen('archive');
+  };
+
+  const handleBackFromArchive = () => {
+    setScreen('dashboard');
+  };
+
+  const handleRestoreTask = (taskId) => {
+    const taskToRestore = archivedTasks.find(t => t.id === taskId);
+    if (taskToRestore) {
+      const { archivedAt, ...restoredTask } = taskToRestore;
+      setCompletedTasks([restoredTask, ...completedTasks]);
+      setArchivedTasks(archivedTasks.filter(t => t.id !== taskId));
+    }
+  };
+
+  const handlePermanentDelete = (taskId) => {
+    setArchivedTasks(archivedTasks.filter(t => t.id !== taskId));
+  };
+
   const handleUpdateTask = (taskId, updates) => {
     const updatedTasks = tasks.map(t =>
       t.id === taskId ? { ...t, ...updates } : t
@@ -2104,16 +2456,20 @@ export default function PriorityApp() {
   };
 
   const handleClearAllData = () => {
+    // Only clear active tasks, not completed or archived
     setTasks([]);
     setRankedTasks([]);
-    setCompletedTasks([]);
     localStorage.removeItem('tempo_tasks');
-    localStorage.removeItem('tempo_completed_tasks');
   };
 
   const handleClearCompleted = () => {
+    // Move completed tasks to archive with archivedAt timestamp
+    const tasksToArchive = completedTasks.map(task => ({
+      ...task,
+      archivedAt: new Date(),
+    }));
+    setArchivedTasks([...tasksToArchive, ...archivedTasks]);
     setCompletedTasks([]);
-    localStorage.removeItem('tempo_completed_tasks');
   };
 
   // Daily review handlers
@@ -2226,6 +2582,17 @@ export default function PriorityApp() {
           onClearAllData={handleClearAllData}
           onClearCompleted={handleClearCompleted}
           onUpdateTask={handleUpdateTask}
+          onViewArchive={handleViewArchive}
+          archivedTasksCount={archivedTasks.length}
+        />
+      )}
+
+      {screen === 'archive' && (
+        <ArchiveScreen
+          archivedTasks={archivedTasks}
+          onRestore={handleRestoreTask}
+          onPermanentDelete={handlePermanentDelete}
+          onBack={handleBackFromArchive}
         />
       )}
 
