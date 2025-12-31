@@ -1350,6 +1350,8 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll }) => {
   const [reviewedTasks, setReviewedTasks] = useState(new Set());
   const [updatingDeadlineFor, setUpdatingDeadlineFor] = useState(null);
+  const [confirmDeleteTaskId, setConfirmDeleteTaskId] = useState(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
 
   const handleComplete = (taskId) => {
     setReviewedTasks(new Set([...reviewedTasks, taskId]));
@@ -1369,7 +1371,13 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
 
   const handleDismiss = (taskId) => {
     setReviewedTasks(new Set([...reviewedTasks, taskId]));
+    setConfirmDeleteTaskId(null);
     onDismiss(taskId);
+  };
+
+  const handleDismissAll = () => {
+    setConfirmDeleteAll(false);
+    onDismissAll();
   };
 
   const remainingTasks = tasks.filter(t => !reviewedTasks.has(t.id));
@@ -1498,21 +1506,56 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
                   >
                     Keep task - update deadline
                   </button>
-                  <button
-                    onClick={() => handleDismiss(task.id)}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: 'transparent',
-                      color: colors.textSecondary,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete task
-                  </button>
+                  {confirmDeleteTaskId !== task.id ? (
+                    <button
+                      onClick={() => setConfirmDeleteTaskId(task.id)}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: 'transparent',
+                        color: colors.textSecondary,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Delete task
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        onClick={() => setConfirmDeleteTaskId(null)}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: 'transparent',
+                          color: colors.textSecondary,
+                          border: `1px solid ${colors.border}`,
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleDismiss(task.id)}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: colors.urgent,
+                          color: colors.textPrimary,
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Inline deadline selector */}
@@ -1556,22 +1599,64 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
           ))}
         </div>
 
-        <button
-          onClick={onDismissAll}
-          style={{
-            width: '100%',
-            padding: '14px',
-            backgroundColor: 'transparent',
-            color: colors.textSecondary,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Delete all tasks and start fresh
-        </button>
+        {!confirmDeleteAll ? (
+          <button
+            onClick={() => setConfirmDeleteAll(true)}
+            style={{
+              width: '100%',
+              padding: '14px',
+              backgroundColor: 'transparent',
+              color: colors.textSecondary,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Delete all tasks and start fresh
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
+              Are you sure? This cannot be undone.
+            </div>
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <button
+                onClick={() => setConfirmDeleteAll(false)}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  backgroundColor: 'transparent',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '12px',
+                  color: colors.textSecondary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDismissAll}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  backgroundColor: colors.urgent,
+                  border: 'none',
+                  borderRadius: '12px',
+                  color: colors.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete all
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
