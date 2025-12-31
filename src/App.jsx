@@ -1346,6 +1346,169 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
   );
 };
 
+// Daily Review Modal Component
+const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll }) => {
+  const [reviewedTasks, setReviewedTasks] = useState(new Set());
+
+  const handleComplete = (taskId) => {
+    setReviewedTasks(new Set([...reviewedTasks, taskId]));
+    onComplete(taskId);
+  };
+
+  const handleReAdd = (taskId) => {
+    setReviewedTasks(new Set([...reviewedTasks, taskId]));
+    onReAdd(taskId);
+  };
+
+  const handleDismiss = (taskId) => {
+    setReviewedTasks(new Set([...reviewedTasks, taskId]));
+    onDismiss(taskId);
+  };
+
+  const remainingTasks = tasks.filter(t => !reviewedTasks.has(t.id));
+
+  if (remainingTasks.length === 0) {
+    return null;
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '40px',
+    }}>
+      <div style={{
+        backgroundColor: colors.bgSurface,
+        borderRadius: '16px',
+        padding: '32px',
+        maxWidth: '600px',
+        width: '100%',
+        maxHeight: '80vh',
+        overflow: 'auto',
+      }}>
+        <h2 style={{
+          color: colors.textPrimary,
+          fontSize: '24px',
+          fontWeight: 700,
+          marginBottom: '12px',
+          margin: 0,
+        }}>
+          Welcome back!
+        </h2>
+        <p style={{
+          color: colors.textSecondary,
+          fontSize: '16px',
+          marginBottom: '24px',
+        }}>
+          You have {remainingTasks.length} incomplete {remainingTasks.length === 1 ? 'task' : 'tasks'} from yesterday. What would you like to do with them?
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+          {remainingTasks.map(task => (
+            <div
+              key={task.id}
+              style={{
+                backgroundColor: colors.bgPrimary,
+                borderRadius: '12px',
+                padding: '16px',
+                border: `1px solid ${colors.border}`,
+              }}
+            >
+              <div style={{
+                color: colors.textPrimary,
+                fontSize: '16px',
+                fontWeight: 600,
+                marginBottom: '12px',
+              }}>
+                {task.name}
+              </div>
+              <div style={{
+                color: colors.textSecondary,
+                fontSize: '14px',
+                marginBottom: '12px',
+              }}>
+                {task.reason}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => handleComplete(task.id)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: colors.accentGreen,
+                    color: colors.bgPrimary,
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Mark complete
+                </button>
+                <button
+                  onClick={() => handleReAdd(task.id)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: colors.accentBlue,
+                    color: colors.textPrimary,
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Re-add today
+                </button>
+                <button
+                  onClick={() => handleDismiss(task.id)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'transparent',
+                    color: colors.textSecondary,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onDismissAll}
+          style={{
+            width: '100%',
+            padding: '14px',
+            backgroundColor: 'transparent',
+            color: colors.textSecondary,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Dismiss all and start fresh
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ==================== MAIN APP ====================
 
 export default function PriorityApp() {
@@ -1354,6 +1517,8 @@ export default function PriorityApp() {
   const [rankedTasks, setRankedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [showDailyReview, setShowDailyReview] = useState(false);
+  const [tasksToReview, setTasksToReview] = useState([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -1361,7 +1526,12 @@ export default function PriorityApp() {
       const savedTasks = localStorage.getItem('tempo_tasks');
       const savedCompletedTasks = localStorage.getItem('tempo_completed_tasks');
       const hasVisited = localStorage.getItem('tempo_has_visited');
-      
+      const lastLoginDate = localStorage.getItem('tempo_last_login_date');
+
+      // Check if it's a new day
+      const today = new Date().toDateString();
+      const isNewDay = lastLoginDate && lastLoginDate !== today;
+
       if (savedTasks) {
         const parsed = JSON.parse(savedTasks);
         // Restore Date objects
@@ -1369,10 +1539,18 @@ export default function PriorityApp() {
           ...t,
           createdAt: new Date(t.createdAt),
         }));
+
+        // If it's a new day and there are tasks, show review modal
+        if (isNewDay && restored.length > 0 && hasVisited) {
+          const rankedForReview = rankTasks(restored);
+          setTasksToReview(rankedForReview);
+          setShowDailyReview(true);
+        }
+
         setTasks(restored);
         setRankedTasks(rankTasks(restored));
       }
-      
+
       if (savedCompletedTasks) {
         const parsed = JSON.parse(savedCompletedTasks);
         const restored = parsed.map(t => ({
@@ -1382,7 +1560,10 @@ export default function PriorityApp() {
         }));
         setCompletedTasks(restored);
       }
-      
+
+      // Update last login date
+      localStorage.setItem('tempo_last_login_date', today);
+
       // Skip welcome screen if user has visited before
       if (hasVisited) {
         if (savedTasks && JSON.parse(savedTasks).length > 0) {
@@ -1477,6 +1658,40 @@ export default function PriorityApp() {
     localStorage.removeItem('tempo_completed_tasks');
   };
 
+  // Daily review handlers
+  const handleReviewComplete = (taskId) => {
+    const taskToComplete = tasksToReview.find(t => t.id === taskId);
+    if (taskToComplete) {
+      setCompletedTasks([
+        { ...taskToComplete, completedAt: new Date() },
+        ...completedTasks,
+      ]);
+    }
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    setTasks(updatedTasks);
+    setRankedTasks(rankTasks(updatedTasks));
+  };
+
+  const handleReviewReAdd = (taskId) => {
+    // Task stays in the list, just close the review for this task
+    // The task is already in the tasks array, no action needed
+  };
+
+  const handleReviewDismiss = (taskId) => {
+    // Remove from tasks without marking complete
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    setTasks(updatedTasks);
+    setRankedTasks(rankTasks(updatedTasks));
+  };
+
+  const handleReviewDismissAll = () => {
+    // Clear all tasks without marking them complete
+    setTasks([]);
+    setRankedTasks([]);
+    setShowDailyReview(false);
+    setTasksToReview([]);
+  };
+
   // Don't render until localStorage is loaded
   if (!isLoaded) {
     return (
@@ -1519,6 +1734,16 @@ export default function PriorityApp() {
           onUncomplete={handleUncomplete}
           onAddTask={handleAddFromDashboard}
           onClearAllData={handleClearAllData}
+        />
+      )}
+
+      {showDailyReview && tasksToReview.length > 0 && (
+        <DailyReviewModal
+          tasks={tasksToReview}
+          onComplete={handleReviewComplete}
+          onReAdd={handleReviewReAdd}
+          onDismiss={handleReviewDismiss}
+          onDismissAll={handleReviewDismissAll}
         />
       )}
     </div>
