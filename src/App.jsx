@@ -938,12 +938,12 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                 <button
                   onClick={() => setIsDeletingConfirm(false)}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     backgroundColor: 'transparent',
                     color: colors.textSecondary,
                     border: `1px solid ${colors.border}`,
-                    borderRadius: '8px',
-                    fontSize: '12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     marginLeft: '8px',
@@ -957,12 +957,12 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                     setIsDeletingConfirm(false);
                   }}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     backgroundColor: colors.urgent,
                     color: colors.textPrimary,
                     border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     marginLeft: '8px',
