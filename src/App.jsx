@@ -1251,6 +1251,25 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           >
             {showLegend ? 'Hide scoring' : 'How scoring works'}
           </button>
+          {tasks.length > 0 && (
+            <button
+              onClick={() => {
+                setTasksToReview(tasks);
+                setShowDailyReview(true);
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
+              Review tasks
+            </button>
+          )}
         </div>
 
         {showMatrix && <MatrixView tasks={tasks} />}
