@@ -1257,13 +1257,33 @@ const ScoringLegend = () => (
 // Completed Task Card Component
 const CompletedTaskCard = ({ task, onUncomplete }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString('en-US', {
+
+  const formatDateTime = (date) => {
+    const d = new Date(date);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const dayName = days[d.getDay()];
+    const monthName = months[d.getMonth()];
+    const dayNum = d.getDate();
+
+    const suffix = (date) => {
+      if (date > 3 && date < 21) return 'th';
+      switch (date % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+
+    const time = d.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
+
+    return `${dayName}, ${monthName} ${dayNum}${suffix(dayNum)} ${time}`;
   };
 
   return (
@@ -1315,7 +1335,7 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
         color: colors.textDim,
         flexShrink: 0,
       }}>
-        {formatTime(task.completedAt)}
+        {formatDateTime(task.completedAt)}
       </div>
     </div>
   );
@@ -1361,7 +1381,7 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onUpdateTask }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -1523,23 +1543,40 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           </div>
         )}
 
-        {/* Clear data option */}
+        {/* Clear/Delete options */}
         {(tasks.length > 0 || completedTasks.length > 0) && (
           <div style={{ textAlign: 'center', paddingTop: '48px', paddingBottom: '24px' }}>
             {!showClearConfirm ? (
-              <button
-                onClick={() => setShowClearConfirm(true)}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: colors.textDim,
-                  fontSize: '19.5px',
-                  cursor: 'pointer',
-                  padding: '8px 16px',
-                }}
-              >
-                Clear all tasks
-              </button>
+              <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', alignItems: 'center' }}>
+                {completedTasks.length > 0 && (
+                  <button
+                    onClick={onClearCompleted}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: colors.textDim,
+                      fontSize: '19.5px',
+                      cursor: 'pointer',
+                      padding: '8px 16px',
+                    }}
+                  >
+                    Clear completed
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: colors.textDim,
+                    fontSize: '19.5px',
+                    cursor: 'pointer',
+                    padding: '8px 16px',
+                  }}
+                >
+                  Delete all tasks
+                </button>
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                 <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
@@ -1576,7 +1613,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                       padding: '8px 20px',
                     }}
                   >
-                    Clear all
+                    Delete all
                   </button>
                 </div>
               </div>
@@ -2074,6 +2111,11 @@ export default function PriorityApp() {
     localStorage.removeItem('tempo_completed_tasks');
   };
 
+  const handleClearCompleted = () => {
+    setCompletedTasks([]);
+    localStorage.removeItem('tempo_completed_tasks');
+  };
+
   // Daily review handlers
   const handleReviewComplete = (taskId) => {
     const taskToComplete = tasksToReview.find(t => t.id === taskId);
@@ -2182,6 +2224,7 @@ export default function PriorityApp() {
           onUncomplete={handleUncomplete}
           onAddTask={handleAddFromDashboard}
           onClearAllData={handleClearAllData}
+          onClearCompleted={handleClearCompleted}
           onUpdateTask={handleUpdateTask}
         />
       )}
