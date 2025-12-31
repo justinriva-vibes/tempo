@@ -1170,35 +1170,26 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
           marginBottom: '24px',
+          position: 'relative',
         }}>
-          <div>
-            <h1 style={{
-              color: colors.textPrimary,
-              fontSize: '32px',
-              fontWeight: 700,
-              margin: 0,
-              marginBottom: '4px',
-            }}>
-              Your Day
-            </h1>
-            <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '8px' }}>
-              {formatDate()}
-            </div>
-            <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
-              {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
-              {dueToday > 0 && (
-                <span style={{ color: colors.urgent }}> · {dueToday} due today</span>
-              )}
-              {groupedTasks.do_today.length > 0 && (
-                <span style={{ color: colors.accentGreen }}> · {groupedTasks.do_today.length} to do now</span>
-              )}
-              {completedTasks.length > 0 && (
-                <span> · {completedTasks.length} done</span>
-              )}
-            </div>
+          <h1 style={{
+            color: colors.textPrimary,
+            fontSize: '32px',
+            fontWeight: 700,
+            margin: 0,
+          }}>
+            Your Day
+          </h1>
+          <div style={{
+            color: colors.textPrimary,
+            fontSize: '32px',
+            fontWeight: 700,
+            marginLeft: '16px',
+          }}>
+            {formatDate()}
           </div>
           <button
             onClick={onAddTask}
@@ -1214,11 +1205,30 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
               fontSize: '14px',
               fontWeight: 700,
               cursor: 'pointer',
+              position: 'absolute',
+              right: 0,
             }}
           >
             <span style={{ fontSize: '20px' }}>+</span>
             ADD TASK
           </button>
+        </div>
+        <div style={{
+          textAlign: 'center',
+          color: colors.textSecondary,
+          fontSize: '14px',
+          marginBottom: '24px',
+        }}>
+          {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+          {dueToday > 0 && (
+            <span style={{ color: colors.urgent }}> · {dueToday} due today</span>
+          )}
+          {groupedTasks.do_today.length > 0 && (
+            <span style={{ color: colors.accentGreen }}> · {groupedTasks.do_today.length} to do now</span>
+          )}
+          {completedTasks.length > 0 && (
+            <span> · {completedTasks.length} done</span>
+          )}
         </div>
 
         {/* Toggle buttons */}
