@@ -1481,7 +1481,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
                     cursor: 'pointer',
                   }}
                 >
-                  Dismiss
+                  Delete task
                 </button>
               </div>
             </div>
