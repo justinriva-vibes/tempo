@@ -776,10 +776,11 @@ const DeadlineBadge = ({ deadline }) => {
 };
 
 // Task Card Component
-const TaskCard = ({ task, onComplete, onUpdate }) => {
+const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeletingConfirm, setIsDeletingConfirm] = useState(false);
   const [editName, setEditName] = useState(task.name);
   const [editImpact, setEditImpact] = useState(task.impact);
   const [editEffort, setEditEffort] = useState(task.effort);
@@ -910,6 +911,82 @@ const TaskCard = ({ task, onComplete, onUpdate }) => {
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
             </button>
+
+            {/* Delete icon or confirmation UI */}
+            {!isDeletingConfirm ? (
+              <button
+                onClick={() => setIsDeletingConfirm(true)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+              </button>
+            ) : (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                marginLeft: '8px',
+              }}>
+                <div style={{
+                  color: colors.textSecondary,
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                }}>
+                  Are you sure? This cannot be undone.
+                </div>
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                }}>
+                  <button
+                    onClick={() => setIsDeletingConfirm(false)}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'transparent',
+                      color: colors.textSecondary,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDelete?.(task.id);
+                      setIsDeletingConfirm(false);
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: colors.urgent,
+                      color: colors.textPrimary,
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
             {task.reason}
@@ -1163,7 +1240,7 @@ const TierSection = ({ tier, tasks, onComplete, onUpdate }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdate} />
+          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
         ))}
       </div>
     </div>
@@ -1381,7 +1458,7 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onViewArchive, archivedTasksCount }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onDeleteTask, onViewArchive, archivedTasksCount }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -2455,6 +2532,12 @@ export default function PriorityApp() {
     setRankedTasks(rankTasks(updatedTasks));
   };
 
+  const handleDeleteTask = (taskId) => {
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    setTasks(updatedTasks);
+    setRankedTasks(rankTasks(updatedTasks));
+  };
+
   const handleClearAllData = () => {
     // Only clear active tasks, not completed or archived
     setTasks([]);
@@ -2582,6 +2665,7 @@ export default function PriorityApp() {
           onClearAllData={handleClearAllData}
           onClearCompleted={handleClearCompleted}
           onUpdateTask={handleUpdateTask}
+          onDeleteTask={handleDeleteTask}
           onViewArchive={handleViewArchive}
           archivedTasksCount={archivedTasks.length}
         />
