@@ -934,58 +934,43 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                 </svg>
               </button>
             ) : (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                marginLeft: '8px',
-              }}>
-                <div style={{
-                  color: colors.textSecondary,
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                }}>
-                  Are you sure? This cannot be undone.
-                </div>
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                }}>
-                  <button
-                    onClick={() => setIsDeletingConfirm(false)}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: 'transparent',
-                      color: colors.textSecondary,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      onDelete?.(task.id);
-                      setIsDeletingConfirm(false);
-                    }}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: colors.urgent,
-                      color: colors.textPrimary,
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              <>
+                <button
+                  onClick={() => setIsDeletingConfirm(false)}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: 'transparent',
+                    color: colors.textSecondary,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    marginLeft: '8px',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete?.(task.id);
+                    setIsDeletingConfirm(false);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: colors.urgent,
+                    color: colors.textPrimary,
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    marginLeft: '8px',
+                  }}
+                >
+                  Delete
+                </button>
+              </>
             )}
           </div>
           <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
