@@ -289,6 +289,72 @@ const EmptyState = ({ onAddTask }) => (
   </div>
 );
 
+// Task Summary Component
+const TaskSummary = ({ name, impact, effort, step }) => {
+  if (step === 0) return null;
+
+  return (
+    <div style={{
+      maxWidth: '480px',
+      margin: '0 auto 32px auto',
+      width: '100%',
+      padding: '16px 20px',
+      backgroundColor: colors.bgSurface,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '12px',
+    }}>
+      <div style={{
+        color: colors.textDim,
+        fontSize: '12px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        marginBottom: '8px'
+      }}>
+        Task Summary
+      </div>
+      <div style={{
+        color: colors.textPrimary,
+        fontSize: '16px',
+        fontWeight: 600,
+        marginBottom: step > 1 ? '12px' : '0'
+      }}>
+        {name}
+      </div>
+      {step > 1 && (
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap'
+        }}>
+          {impact && (
+            <span style={{
+              backgroundColor: colors.bgHover,
+              color: colors.textSecondary,
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px'
+            }}>
+              Impact: {impact === 'high' ? 'High' : 'Low'}
+            </span>
+          )}
+          {step > 2 && effort && (
+            <span style={{
+              backgroundColor: colors.bgHover,
+              color: colors.textSecondary,
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px'
+            }}>
+              Effort: {effort === 'low' ? 'Low' : 'High'}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Add Task Screen
 const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
   const [name, setName] = useState('');
@@ -448,6 +514,8 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
           />
         ))}
       </div>
+
+      <TaskSummary name={name} impact={impact} effort={effort} step={step} />
 
       <div style={{ flex: 1, maxWidth: '480px', margin: '0 auto', width: '100%' }}>
         {step === 0 && (
