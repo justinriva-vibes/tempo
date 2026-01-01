@@ -1710,87 +1710,147 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   zIndex: 100,
                 }}
               >
-                <button
-                  onClick={() => {
-                    setShowMatrix(!showMatrix);
-                    setShowMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    backgroundColor: 'transparent',
-                    color: colors.textPrimary,
-                    border: 'none',
-                    textAlign: 'left',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    borderRadius: '8px 8px 0 0',
-                  }}
-                >
-                  Show Matrix
-                </button>
-                {archivedTasksCount > 0 && (
-                  <button
-                    onClick={() => {
-                      onViewArchive();
-                      setShowMenu(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      backgroundColor: 'transparent',
-                      color: colors.textPrimary,
-                      border: 'none',
-                      textAlign: 'left',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    View Completed Archive
-                  </button>
+                {!showClearConfirm ? (
+                  // Normal menu items
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowMatrix(!showMatrix);
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: 'transparent',
+                        color: colors.textPrimary,
+                        border: 'none',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        borderRadius: '8px 8px 0 0',
+                      }}
+                    >
+                      Show Matrix
+                    </button>
+                    {archivedTasksCount > 0 && (
+                      <button
+                        onClick={() => {
+                          onViewArchive();
+                          setShowMenu(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          backgroundColor: 'transparent',
+                          color: colors.textPrimary,
+                          border: 'none',
+                          textAlign: 'left',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        View Completed Archive
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowLegend(!showLegend);
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: 'transparent',
+                        color: colors.textPrimary,
+                        border: 'none',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      How Scoring Works
+                    </button>
+                    <div style={{
+                      height: '1px',
+                      backgroundColor: colors.border,
+                      margin: '4px 0',
+                    }} />
+                    <button
+                      onClick={() => {
+                        setShowClearConfirm(true);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: 'transparent',
+                        color: colors.urgent,
+                        border: 'none',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        borderRadius: '0 0 8px 8px',
+                      }}
+                    >
+                      Delete All Data
+                    </button>
+                  </>
+                ) : (
+                  // Confirmation dialog
+                  <div style={{ padding: '20px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 600, color: colors.textPrimary, marginBottom: '8px' }}>
+                        ⚠️ Delete All Data?
+                      </div>
+                      <div style={{ fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>
+                        This will permanently delete all active tasks. This cannot be undone.
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          setShowClearConfirm(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '10px 16px',
+                          backgroundColor: 'transparent',
+                          color: colors.textSecondary,
+                          border: `1px solid ${colors.border}`,
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = colors.bgHover}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          onClearAllData();
+                          setShowClearConfirm(false);
+                          setShowMenu(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '10px 16px',
+                          backgroundColor: colors.urgent,
+                          color: colors.textPrimary,
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.target.style.opacity = '1'}
+                      >
+                        Delete All Data
+                      </button>
+                    </div>
+                  </div>
                 )}
-                <button
-                  onClick={() => {
-                    setShowLegend(!showLegend);
-                    setShowMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    backgroundColor: 'transparent',
-                    color: colors.textPrimary,
-                    border: 'none',
-                    textAlign: 'left',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  How Scoring Works
-                </button>
-                <div style={{
-                  height: '1px',
-                  backgroundColor: colors.border,
-                  margin: '4px 0',
-                }} />
-                <button
-                  onClick={() => {
-                    setShowClearConfirm(true);
-                    setShowMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    backgroundColor: 'transparent',
-                    color: colors.urgent,
-                    border: 'none',
-                    textAlign: 'left',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    borderRadius: '0 0 8px 8px',
-                  }}
-                >
-                  Delete All Data
-                </button>
               </div>
             )}
 
