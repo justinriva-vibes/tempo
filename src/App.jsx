@@ -304,16 +304,6 @@ const TaskSummary = ({ name, impact, effort, step }) => {
       borderRadius: '12px',
     }}>
       <div style={{
-        color: colors.textDim,
-        fontSize: '12px',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        marginBottom: '8px'
-      }}>
-        Task Summary
-      </div>
-      <div style={{
         color: colors.textPrimary,
         fontSize: '16px',
         fontWeight: 600,
