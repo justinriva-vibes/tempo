@@ -1579,7 +1579,8 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onDeleteTask, onViewArchive, archivedTasksCount }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showBottomClearConfirm, setShowBottomClearConfirm] = useState(false);
+  const [showMenuClearConfirm, setShowMenuClearConfirm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   // Close menu when clicking outside
@@ -1587,6 +1588,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
     const handleClickOutside = (event) => {
       if (showMenu && !event.target.closest('.dashboard-header-buttons')) {
         setShowMenu(false);
+        setShowMenuClearConfirm(false);
       }
     };
 
@@ -1710,7 +1712,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   zIndex: 100,
                 }}
               >
-                {!showClearConfirm ? (
+                {!showMenuClearConfirm ? (
                   // Normal menu items
                   <>
                     <button
@@ -1777,7 +1779,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     }} />
                     <button
                       onClick={() => {
-                        setShowClearConfirm(true);
+                        setShowMenuClearConfirm(true);
                       }}
                       style={{
                         width: '100%',
@@ -1808,7 +1810,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
                         onClick={() => {
-                          setShowClearConfirm(false);
+                          setShowMenuClearConfirm(false);
                         }}
                         style={{
                           flex: 1,
@@ -1829,7 +1831,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                       <button
                         onClick={() => {
                           onClearAllData();
-                          setShowClearConfirm(false);
+                          setShowMenuClearConfirm(false);
                           setShowMenu(false);
                         }}
                         style={{
@@ -1907,7 +1909,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
         {/* Clear/Delete options */}
         {(tasks.length > 0 || completedTasks.length > 0) && (
           <div style={{ textAlign: 'center', paddingTop: '48px', paddingBottom: '24px' }}>
-            {!showClearConfirm ? (
+            {!showBottomClearConfirm ? (
               <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', alignItems: 'center' }}>
                 {completedTasks.length > 0 && (
                   <button
@@ -1925,7 +1927,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   </button>
                 )}
                 <button
-                  onClick={() => setShowClearConfirm(true)}
+                  onClick={() => setShowBottomClearConfirm(true)}
                   style={{
                     backgroundColor: 'transparent',
                     border: 'none',
@@ -1945,7 +1947,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button
-                    onClick={() => setShowClearConfirm(false)}
+                    onClick={() => setShowBottomClearConfirm(false)}
                     style={{
                       backgroundColor: 'transparent',
                       border: `1px solid ${colors.border}`,
@@ -1961,7 +1963,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   <button
                     onClick={() => {
                       onClearAllData();
-                      setShowClearConfirm(false);
+                      setShowBottomClearConfirm(false);
                     }}
                     style={{
                       backgroundColor: colors.urgent,
