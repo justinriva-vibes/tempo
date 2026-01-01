@@ -915,6 +915,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
 
   return (
     <div
+      className="task-card"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -928,13 +929,13 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         opacity: isCompleted ? 0.5 : 1,
       }}
     >
-      <div style={{
+      <div className="task-card-content" style={{
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
       }}>
         {/* Rank number */}
-        <div style={{
+        <div className="task-rank" style={{
           width: '24px',
           textAlign: 'center',
           color: colors.textDim,
@@ -946,6 +947,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         </div>
 
         <div
+          className="task-checkbox"
           onClick={handleComplete}
           style={{
             width: '24px',
@@ -968,8 +970,8 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
           )}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
+        <div className="task-main" style={{ flex: 1, minWidth: 0 }}>
+          <div className="task-header-row" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
@@ -986,6 +988,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             <DeadlineBadge deadline={task.deadline} />
             {/* Edit icon - always visible */}
             <button
+              className="task-action-button"
               onClick={handleEdit}
               style={{
                 backgroundColor: 'transparent',
@@ -1006,6 +1009,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             {/* Delete icon or confirmation UI */}
             {!isDeletingConfirm ? (
               <button
+                className="task-action-button"
                 onClick={() => setIsDeletingConfirm(true)}
                 style={{
                   backgroundColor: 'transparent',
@@ -1064,12 +1068,12 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
               </>
             )}
           </div>
-          <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
+          <div className="task-reason" style={{ color: colors.textSecondary, fontSize: '14px' }}>
             {task.reason}
           </div>
         </div>
 
-        <div style={{
+        <div className="task-score" style={{
           padding: '6px 12px',
           backgroundColor: colors.bgPrimary,
           borderRadius: '16px',
@@ -1583,39 +1587,41 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
       padding: '40px',
     }}>
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-        <div style={{
+        <div className="dashboard-header" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '24px',
         }}>
-          <div>
-            <h1 style={{
-              color: colors.textPrimary,
-              fontSize: '32px',
-              fontWeight: 700,
-              margin: 0,
-              marginBottom: '4px',
-            }}>
-              Your Day
-            </h1>
-            <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '8px' }}>
-              {formatDate()}
+          <div className="dashboard-header-left">
+            <div className="dashboard-title-row">
+              <h1 style={{
+                color: colors.textPrimary,
+                fontSize: '32px',
+                fontWeight: 700,
+                margin: 0,
+                marginBottom: '4px',
+              }}>
+                Your Day
+              </h1>
+              <div className="dashboard-date" style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '8px' }}>
+                {formatDate()}
+              </div>
             </div>
-            <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
-              {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+            <div className="dashboard-task-count" style={{ color: colors.textSecondary, fontSize: '14px' }}>
+              <span className="task-count-badge">{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</span>
               {dueToday > 0 && (
-                <span style={{ color: colors.urgent }}> · {dueToday} due today</span>
+                <span className="task-count-badge" style={{ color: colors.urgent }}> · {dueToday} due today</span>
               )}
               {groupedTasks.do_today.length > 0 && (
-                <span style={{ color: colors.accentGreen }}> · {groupedTasks.do_today.length} to do now</span>
+                <span className="task-count-badge" style={{ color: colors.accentGreen }}> · {groupedTasks.do_today.length} to do now</span>
               )}
               {completedTasks.length > 0 && (
-                <span> · {completedTasks.length} done</span>
+                <span className="task-count-badge"> · {completedTasks.length} done</span>
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="dashboard-header-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {archivedTasksCount > 0 && (
               <button
                 onClick={onViewArchive}
@@ -1659,7 +1665,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
         </div>
 
         {/* Toggle buttons */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        <div className="dashboard-toggles" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           <button
             onClick={() => setShowMatrix(!showMatrix)}
             style={{
