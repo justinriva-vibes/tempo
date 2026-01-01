@@ -1594,7 +1594,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [showMenu]);
+  }, [showMenu, showMenuClearConfirm]);
 
   // Add rank to each task based on position in sorted list
   const tasksWithRank = tasks.map((task, index) => ({
@@ -1677,7 +1677,13 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           <div className="dashboard-header-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center', position: 'relative' }}>
             {/* Three-dot menu button */}
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={() => {
+                setShowMenu(!showMenu);
+                if (showMenu) {
+                  // Reset confirmation when closing menu
+                  setShowMenuClearConfirm(false);
+                }
+              }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
