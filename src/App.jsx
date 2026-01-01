@@ -1455,22 +1455,12 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
 
   const formatDateTime = (date) => {
     const d = new Date(date);
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     const dayName = days[d.getDay()];
     const monthName = months[d.getMonth()];
     const dayNum = d.getDate();
-
-    const suffix = (date) => {
-      if (date > 3 && date < 21) return 'th';
-      switch (date % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
 
     const time = d.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -1478,7 +1468,7 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
       hour12: true,
     });
 
-    return `${dayName}, ${monthName} ${dayNum}${suffix(dayNum)} ${time}`;
+    return `${dayName}, ${monthName} ${dayNum} - ${time}`;
   };
 
   return (
@@ -2029,22 +2019,12 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
 
     const formatDateTime = (date) => {
       const d = new Date(date);
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       const dayName = days[d.getDay()];
       const monthName = months[d.getMonth()];
       const dayNum = d.getDate();
-
-      const suffix = (date) => {
-        if (date > 3 && date < 21) return 'th';
-        switch (date % 10) {
-          case 1: return 'st';
-          case 2: return 'nd';
-          case 3: return 'rd';
-          default: return 'th';
-        }
-      };
 
       const time = d.toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -2052,7 +2032,7 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
         hour12: true,
       });
 
-      return `${dayName}, ${monthName} ${dayNum}${suffix(dayNum)} ${time}`;
+      return `${dayName}, ${monthName} ${dayNum} - ${time}`;
     };
 
     return (
