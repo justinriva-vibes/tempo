@@ -1800,7 +1800,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         borderRadius: '0 0 8px 8px',
                       }}
                     >
-                      Delete All Data
+                      Delete Incomplete
                     </button>
                   </>
                 ) : (
@@ -1808,10 +1808,10 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   <div style={{ padding: '20px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                       <div style={{ fontSize: '16px', fontWeight: 600, color: colors.textPrimary, marginBottom: '8px' }}>
-                        ⚠️ Delete All Data?
+                        ⚠️ Delete Incomplete?
                       </div>
                       <div style={{ fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>
-                        This will permanently delete all active tasks. This cannot be undone.
+                        This will permanently delete all incomplete tasks. This cannot be undone.
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -1855,7 +1855,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         onMouseEnter={(e) => e.target.style.opacity = '0.9'}
                         onMouseLeave={(e) => e.target.style.opacity = '1'}
                       >
-                        Delete All Data
+                        Delete Incomplete
                       </button>
                     </div>
                   </div>
@@ -1930,7 +1930,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                       padding: '8px 16px',
                     }}
                   >
-                    Archive all completed tasks
+                    Archive Completed
                   </button>
                 )}
                 <button
@@ -1944,7 +1944,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     padding: '8px 16px',
                   }}
                 >
-                  Delete all active tasks
+                  Delete Incomplete
                 </button>
               </div>
             ) : (
