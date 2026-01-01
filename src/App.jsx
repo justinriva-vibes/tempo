@@ -1328,7 +1328,7 @@ const TierSection = ({ tier, tasks, onComplete, onUpdate, onDelete }) => {
 };
 
 // Matrix Visualization Component
-const MatrixView = ({ tasks }) => {
+const MatrixView = ({ tasks, setShowMatrix }) => {
   const quadrantTasks = {
     quick_win: tasks.filter(t => t.quadrant === 'quick_win'),
     big_bet: tasks.filter(t => t.quadrant === 'big_bet'),
@@ -1358,22 +1358,42 @@ const MatrixView = ({ tasks }) => {
   );
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '12px',
-      marginBottom: '32px',
-    }}>
-      <QuadrantBox title="QUICK WINS" subtitle="High impact · Low effort" tasks={quadrantTasks.quick_win} color={colors.accentGreen} />
-      <QuadrantBox title="BIG BETS" subtitle="High impact · High effort" tasks={quadrantTasks.big_bet} color={colors.accentBlue} />
-      <QuadrantBox title="FILL-INS" subtitle="Low impact · Low effort" tasks={quadrantTasks.fill_in} color={colors.textSecondary} />
-      <QuadrantBox title="TIME SINKS" subtitle="Low impact · High effort" tasks={quadrantTasks.time_sink} color={colors.urgent} />
+    <div style={{ marginBottom: '32px' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px',
+        marginBottom: '16px',
+      }}>
+        <QuadrantBox title="QUICK WINS" subtitle="High impact · Low effort" tasks={quadrantTasks.quick_win} color={colors.accentGreen} />
+        <QuadrantBox title="BIG BETS" subtitle="High impact · High effort" tasks={quadrantTasks.big_bet} color={colors.accentBlue} />
+        <QuadrantBox title="FILL-INS" subtitle="Low impact · Low effort" tasks={quadrantTasks.fill_in} color={colors.textSecondary} />
+        <QuadrantBox title="TIME SINKS" subtitle="Low impact · High effort" tasks={quadrantTasks.time_sink} color={colors.urgent} />
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <button
+          onClick={() => setShowMatrix(false)}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: 'transparent',
+            color: colors.textSecondary,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '8px',
+            fontSize: '13px',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = colors.bgHover}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+        >
+          Hide Matrix
+        </button>
+      </div>
     </div>
   );
 };
 
 // Scoring Legend Component
-const ScoringLegend = () => (
+const ScoringLegend = ({ setShowLegend }) => (
   <div style={{
     backgroundColor: colors.bgSurface,
     borderRadius: '12px',
@@ -1407,6 +1427,24 @@ const ScoringLegend = () => (
         <span style={{ color: colors.textSecondary }}>Could Do: 30+</span>
         <span style={{ color: colors.textDim }}>Defer: &lt;30</span>
       </div>
+    </div>
+    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      <button
+        onClick={() => setShowLegend(false)}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: 'transparent',
+          color: colors.textSecondary,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '8px',
+          fontSize: '13px',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = colors.bgHover}
+        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+      >
+        Hide Scoring Guide
+      </button>
     </div>
   </div>
 );
@@ -1778,8 +1816,8 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
           </div>
         </div>
 
-        {showMatrix && <MatrixView tasks={tasks} />}
-        {showLegend && <ScoringLegend />}
+        {showMatrix && <MatrixView tasks={tasks} setShowMatrix={setShowMatrix} />}
+        {showLegend && <ScoringLegend setShowLegend={setShowLegend} />}
 
         <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: '24px' }}>
           <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
