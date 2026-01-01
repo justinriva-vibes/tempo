@@ -1585,8 +1585,10 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 
   // Close menu when clicking outside
   useEffect(() => {
+    console.log('useEffect running - showMenu:', showMenu, 'showMenuClearConfirm:', showMenuClearConfirm);
     const handleClickOutside = (event) => {
       if (showMenu && !event.target.closest('.dashboard-header-buttons')) {
+        console.log('Click outside detected, closing menu');
         setShowMenu(false);
         setShowMenuClearConfirm(false);
       }
@@ -1718,6 +1720,10 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   zIndex: 100,
                 }}
               >
+                {(() => {
+                  console.log('Rendering menu - showMenuClearConfirm:', showMenuClearConfirm);
+                  return null;
+                })()}
                 {!showMenuClearConfirm ? (
                   // Normal menu items
                   <>
@@ -1785,7 +1791,9 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     }} />
                     <button
                       onClick={() => {
+                        console.log('Delete All Data clicked - before:', showMenuClearConfirm);
                         setShowMenuClearConfirm(true);
+                        console.log('Delete All Data clicked - after setState call');
                       }}
                       style={{
                         width: '100%',
