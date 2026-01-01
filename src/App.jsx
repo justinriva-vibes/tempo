@@ -63,6 +63,35 @@ function getTier(score) {
   return 'defer';
 }
 
+// Helper functions for daily review task tracking
+function getReviewedTasksForDate(date) {
+  const key = `tempo_reviewed_tasks_${date.toDateString()}`;
+  const stored = localStorage.getItem(key);
+  return stored ? new Set(JSON.parse(stored)) : new Set();
+}
+
+function addToReviewedTasks(taskId, date) {
+  const key = `tempo_reviewed_tasks_${date.toDateString()}`;
+  const reviewed = getReviewedTasksForDate(date);
+  reviewed.add(taskId);
+  localStorage.setItem(key, JSON.stringify(Array.from(reviewed)));
+}
+
+function cleanupOldReviewData() {
+  const keys = Object.keys(localStorage);
+  const reviewDataKeys = keys.filter(k => k.startsWith('tempo_reviewed_tasks_'));
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  reviewDataKeys.forEach(key => {
+    const dateStr = key.replace('tempo_reviewed_tasks_', '');
+    const keyDate = new Date(dateStr);
+    if (keyDate < thirtyDaysAgo) {
+      localStorage.removeItem(key);
+    }
+  });
+}
+
 function generateReason(task, quadrant) {
   const quadrantLabels = {
     quick_win: 'Quick win',
@@ -2368,9 +2397,22 @@ export default function PriorityApp() {
 
         // If it's a new day and there are tasks, show review modal
         if (isNewDay && restored.length > 0 && hasVisited) {
-          const rankedForReview = rankTasks(restored);
-          setTasksToReview(rankedForReview);
-          setShowDailyReview(true);
+          // Get yesterday's date to check which tasks were already reviewed
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const reviewedYesterday = getReviewedTasksForDate(yesterday);
+
+          // Filter out tasks that were already reviewed
+          const tasksNotReviewed = restored.filter(t => !reviewedYesterday.has(t.id));
+
+          if (tasksNotReviewed.length > 0) {
+            const rankedForReview = rankTasks(tasksNotReviewed);
+            setTasksToReview(rankedForReview);
+            setShowDailyReview(true);
+          } else {
+            // All tasks were already reviewed, safe to update timestamp
+            localStorage.setItem('tempo_last_login_date', today);
+          }
         }
 
         setTasks(restored);
@@ -2398,6 +2440,9 @@ export default function PriorityApp() {
         }));
         setArchivedTasks(restored);
       }
+
+      // Clean up old review data (entries older than 30 days)
+      cleanupOldReviewData();
 
       // Only update last login date if we're NOT showing the review modal
       // (it will be updated after the user completes the review)
@@ -2568,6 +2613,11 @@ export default function PriorityApp() {
     setTasks(updatedTasks);
     setRankedTasks(rankTasks(updatedTasks));
 
+    // Add to reviewed tasks in localStorage
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    addToReviewedTasks(taskId, yesterday);
+
     // Check if all tasks have been reviewed
     const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
     if (remainingToReview.length === 0) {
@@ -2588,6 +2638,11 @@ export default function PriorityApp() {
     }
     // Otherwise, task stays in the list as-is
 
+    // Add to reviewed tasks in localStorage
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    addToReviewedTasks(taskId, yesterday);
+
     // Check if all tasks have been reviewed
     const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
     if (remainingToReview.length === 0) {
@@ -2603,6 +2658,11 @@ export default function PriorityApp() {
     setTasks(updatedTasks);
     setRankedTasks(rankTasks(updatedTasks));
 
+    // Add to reviewed tasks in localStorage
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    addToReviewedTasks(taskId, yesterday);
+
     // Check if all tasks have been reviewed
     const remainingToReview = tasksToReview.filter(t => t.id !== taskId);
     if (remainingToReview.length === 0) {
@@ -2613,6 +2673,14 @@ export default function PriorityApp() {
   };
 
   const handleReviewDismissAll = () => {
+    // Mark all current tasks as reviewed
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    tasksToReview.forEach(task => {
+      addToReviewedTasks(task.id, yesterday);
+    });
+
     // Clear all tasks without marking them complete
     setTasks([]);
     setRankedTasks([]);
