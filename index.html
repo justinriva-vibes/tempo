@@ -107,12 +107,12 @@
         }
 
         /* Daily Review Modal task buttons - stack vertically on mobile */
-        div[style*="flexDirection: 'column'"] > div[style*="display: 'flex'"][style*="gap: '8px'"] {
+        .modal-button-row {
           flex-direction: column !important;
-          align-items: stretch !important;
+          gap: 12px !important;
         }
 
-        div[style*="flexDirection: 'column'"] > div[style*="display: 'flex'"][style*="gap: '8px'"] > button {
+        .modal-button-row > button {
           width: 100% !important;
           min-height: 48px !important;
           padding: 12px 16px !important;

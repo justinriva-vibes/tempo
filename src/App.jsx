@@ -2210,7 +2210,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
                 {task.reason}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="modal-button-row" style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => handleComplete(task.id)}
                     style={{
@@ -2273,7 +2273,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
                       Delete task
                     </button>
                   ) : (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="modal-button-row" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button
                         onClick={() => setConfirmDeleteTaskId(null)}
                         style={{
