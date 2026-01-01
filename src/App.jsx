@@ -793,11 +793,15 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
   };
 
   const handleEdit = () => {
-    setEditName(task.name);
-    setEditImpact(task.impact);
-    setEditEffort(task.effort);
-    setEditDeadline(task.deadline);
-    setIsEditing(true);
+    if (isEditing) {
+      setIsEditing(false);
+    } else {
+      setEditName(task.name);
+      setEditImpact(task.impact);
+      setEditEffort(task.effort);
+      setEditDeadline(task.deadline);
+      setIsEditing(true);
+    }
   };
 
   const handleSave = () => {
@@ -1799,11 +1803,22 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
             }}>
               {task.name}
             </div>
-            <div style={{ color: colors.textSecondary, fontSize: '13px', marginBottom: '4px' }}>
-              Completed: {formatDateTime(task.completedAt)}
+            <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '4px' }}>
+              {(() => {
+                const quadrant = getQuadrant(task.impact, task.effort);
+                const quadrantLabels = {
+                  quick_win: 'Quick Win',
+                  big_bet: 'Big Bet',
+                  fill_in: 'Fill In',
+                  time_sink: 'Time Sink'
+                };
+                const impactLabel = task.impact === 'high' ? 'High Impact' : 'Low Impact';
+                const effortLabel = task.effort === 'high' ? 'High Effort' : 'Low Effort';
+                return `${quadrantLabels[quadrant]} · ${impactLabel}, ${effortLabel}`;
+              })()}
             </div>
-            <div style={{ color: colors.textDim, fontSize: '13px' }}>
-              Archived: {formatDateTime(task.archivedAt)}
+            <div style={{ color: colors.textSecondary, fontSize: '13px' }}>
+              Completed: {formatDateTime(task.completedAt)}
             </div>
           </div>
         </div>
