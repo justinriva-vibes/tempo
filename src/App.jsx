@@ -1542,6 +1542,19 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.dashboard-header-buttons')) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showMenu]);
 
   // Add rank to each task based on position in sorted list
   const tasksWithRank = tasks.map((task, index) => ({
@@ -1621,27 +1634,128 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
               )}
             </div>
           </div>
-          <div className="dashboard-header-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {archivedTasksCount > 0 && (
-              <button
-                onClick={onViewArchive}
+          <div className="dashboard-header-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center', position: 'relative' }}>
+            {/* Three-dot menu button */}
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '50%',
+                fontSize: '20px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              ⋮
+            </button>
+
+            {/* Dropdown menu */}
+            {showMenu && (
+              <div
+                className="dropdown-menu"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
-                  backgroundColor: 'transparent',
-                  color: colors.textSecondary,
+                  position: 'absolute',
+                  top: '48px',
+                  right: '0',
+                  backgroundColor: colors.bgSurface,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: '24px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                  minWidth: '220px',
+                  zIndex: 100,
                 }}
               >
-                Completed Archive ({archivedTasksCount})
-              </button>
+                <button
+                  onClick={() => {
+                    setShowMatrix(!showMatrix);
+                    setShowMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: 'transparent',
+                    color: colors.textPrimary,
+                    border: 'none',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    borderRadius: '8px 8px 0 0',
+                  }}
+                >
+                  Show Matrix
+                </button>
+                {archivedTasksCount > 0 && (
+                  <button
+                    onClick={() => {
+                      onViewArchive();
+                      setShowMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      backgroundColor: 'transparent',
+                      color: colors.textPrimary,
+                      border: 'none',
+                      textAlign: 'left',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    View Completed Archive
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowLegend(!showLegend);
+                    setShowMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: 'transparent',
+                    color: colors.textPrimary,
+                    border: 'none',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  How Scoring Works
+                </button>
+                <div style={{
+                  height: '1px',
+                  backgroundColor: colors.border,
+                  margin: '4px 0',
+                }} />
+                <button
+                  onClick={() => {
+                    setShowClearConfirm(true);
+                    setShowMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: 'transparent',
+                    color: colors.urgent,
+                    border: 'none',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    borderRadius: '0 0 8px 8px',
+                  }}
+                >
+                  Delete All Data
+                </button>
+              </div>
             )}
+
             <button
               onClick={onAddTask}
               style={{
@@ -1662,38 +1776,6 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
               ADD TASK
             </button>
           </div>
-        </div>
-
-        {/* Toggle buttons */}
-        <div className="dashboard-toggles" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-          <button
-            onClick={() => setShowMatrix(!showMatrix)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: showMatrix ? colors.bgHover : 'transparent',
-              color: colors.textSecondary,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
-            {showMatrix ? 'Hide matrix' : 'Show matrix'}
-          </button>
-          <button
-            onClick={() => setShowLegend(!showLegend)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: showLegend ? colors.bgHover : 'transparent',
-              color: colors.textSecondary,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
-            {showLegend ? 'Hide scoring' : 'How scoring works'}
-          </button>
         </div>
 
         {showMatrix && <MatrixView tasks={tasks} />}

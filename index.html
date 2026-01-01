@@ -21,6 +21,11 @@
         -moz-osx-font-smoothing: grayscale;
       }
 
+      /* Dropdown menu hover effects */
+      .dropdown-menu button:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+
       /* Mobile-responsive styles */
       @media (max-width: 640px) {
         /* Reduce main container padding on all screens */
@@ -193,19 +198,44 @@
           white-space: nowrap !important;
         }
 
-        /* Header buttons - 50/50 row */
+        /* Header buttons - menu and add task side by side */
         .dashboard-header-buttons {
           width: 100% !important;
-          display: grid !important;
-          grid-template-columns: 1fr 1fr !important;
+          display: flex !important;
+          justify-content: space-between !important;
           gap: 8px !important;
         }
 
-        .dashboard-header-buttons button {
-          width: 100% !important;
+        /* Three-dot menu button - larger touch target */
+        .dashboard-header-buttons > button:first-child {
+          width: 44px !important;
+          height: 44px !important;
+          flex-shrink: 0 !important;
+        }
+
+        /* Add task button - takes remaining space */
+        .dashboard-header-buttons > button:last-child {
+          flex: 1 !important;
           justify-content: center !important;
           font-size: 12px !important;
           padding: 12px 16px !important;
+        }
+
+        /* Dropdown menu positioning and sizing */
+        .dropdown-menu {
+          position: fixed !important;
+          top: auto !important;
+          right: 20px !important;
+          left: 20px !important;
+          min-width: auto !important;
+          max-width: 100% !important;
+        }
+
+        /* Dropdown menu items - larger touch targets */
+        .dropdown-menu button {
+          min-height: 48px !important;
+          padding: 14px 16px !important;
+          font-size: 15px !important;
         }
 
         /* Toggle buttons - vertical stack */
