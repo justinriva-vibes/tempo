@@ -1694,21 +1694,41 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 
             {/* Dropdown menu */}
             {showMenu && (
-              <div
-                className="dropdown-menu"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  position: 'absolute',
-                  top: '48px',
-                  right: '0',
-                  backgroundColor: colors.bgSurface,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-                  minWidth: '220px',
-                  zIndex: 100,
-                }}
-              >
+              <>
+                {/* Backdrop overlay */}
+                <div
+                  className="menu-backdrop"
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShowMenuClearConfirm(false);
+                  }}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    zIndex: 50,
+                  }}
+                />
+
+                {/* Menu dropdown */}
+                <div
+                  className="dropdown-menu"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: 'absolute',
+                    top: '48px',
+                    right: '0',
+                    backgroundColor: colors.bgSurface,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                    minWidth: '220px',
+                    zIndex: 100,
+                  }}
+                >
                 {!showMenuClearConfirm ? (
                   // Normal menu items
                   <>
@@ -1851,6 +1871,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   </div>
                 )}
               </div>
+              </>
             )}
 
             <button

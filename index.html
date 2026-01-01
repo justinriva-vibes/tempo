@@ -26,6 +26,13 @@
         background-color: rgba(255, 255, 255, 0.05) !important;
       }
 
+      /* Hide backdrop on desktop (optional - can show on both) */
+      @media (min-width: 641px) {
+        .menu-backdrop {
+          display: none;
+        }
+      }
+
       /* Mobile-responsive styles */
       @media (max-width: 640px) {
         /* Reduce main container padding on all screens */
