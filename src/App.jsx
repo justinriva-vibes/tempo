@@ -1950,7 +1950,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         borderRadius: '8px 8px 0 0',
                       }}
                     >
-                      Show Matrix
+                      Show matrix
                     </button>
                     {archivedTasksCount > 0 && (
                       <button
@@ -1969,7 +1969,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                           cursor: 'pointer',
                         }}
                       >
-                        View Completed Archive
+                        View completed archive
                       </button>
                     )}
                     <button
@@ -2011,7 +2011,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         borderRadius: '0 0 8px 8px',
                       }}
                     >
-                      Delete Incomplete
+                      Delete incomplete
                     </button>
                   </>
                 ) : (
@@ -2019,7 +2019,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                   <div style={{ padding: '20px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                       <div style={{ fontSize: '16px', fontWeight: 600, color: colors.textPrimary, marginBottom: '8px' }}>
-                        ⚠️ Delete Incomplete?
+                        ⚠️ Delete incomplete?
                       </div>
                       <div style={{ fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>
                         This will permanently delete all incomplete tasks. This cannot be undone.
@@ -2066,7 +2066,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         onMouseEnter={(e) => e.target.style.opacity = '0.9'}
                         onMouseLeave={(e) => e.target.style.opacity = '1'}
                       >
-                        Delete Incomplete
+                        Delete incomplete
                       </button>
                     </div>
                   </div>
@@ -2142,7 +2142,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                       padding: '8px 16px',
                     }}
                   >
-                    Archive Completed
+                    Archive completed
                   </button>
                 )}
                 <button
@@ -2156,7 +2156,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                     padding: '8px 16px',
                   }}
                 >
-                  Delete Incomplete
+                  Delete incomplete
                 </button>
               </div>
             ) : (
@@ -2500,7 +2500,7 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
                   cursor: 'pointer',
                 }}
               >
-                Delete All
+                Delete all
               </button>
             ) : (
               <div style={{
@@ -2543,7 +2543,7 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
                       cursor: 'pointer',
                     }}
                   >
-                    Delete All
+                    Delete all
                   </button>
                 </div>
               </div>
