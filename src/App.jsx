@@ -1027,6 +1027,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                 justifyContent: 'center',
                 minWidth: '40px',
                 minHeight: '40px',
+                alignSelf: 'center',
               }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
@@ -1047,6 +1048,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                   justifyContent: 'center',
                   minWidth: '40px',
                   minHeight: '40px',
+                  alignSelf: 'center',
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
