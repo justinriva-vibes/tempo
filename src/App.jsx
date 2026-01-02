@@ -930,11 +930,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         opacity: isCompleted ? 0.5 : 1,
       }}
     >
-      <div className="task-card-content" style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-      }}>
+      <div className="task-card-content">
         {/* Rank number */}
         <div className="task-rank" style={{
           width: '24px',
@@ -971,11 +967,8 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
           )}
         </div>
 
-        <div className="task-main" style={{ flex: 1, minWidth: 0 }}>
+        <div className="task-main">
           <div className="task-header-row" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
             marginBottom: '4px',
           }}>
             <span style={{

@@ -26,6 +26,24 @@
         background-color: rgba(255, 255, 255, 0.05) !important;
       }
 
+      /* Base desktop styles for task cards */
+      .task-card-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .task-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .task-header-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
       /* Hide backdrop on desktop (optional - can show on both) */
       @media (min-width: 641px) {
         .menu-backdrop {
