@@ -1988,7 +1988,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
                         cursor: 'pointer',
                       }}
                     >
-                      How Scoring Works
+                      How scoring works
                     </button>
                     <div style={{
                       height: '1px',
