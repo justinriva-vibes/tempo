@@ -300,35 +300,40 @@
           align-self: start !important;
         }
 
-        /* task-header-row uses flex to layout its children horizontally */
+        /* task-header-row - simple wrap layout */
         .task-header-row {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 6px !important;
-          align-items: center !important;
+          display: block !important;
         }
 
-        /* Task name styling - takes full width to force next line */
-        .task-header-row > span:first-child {
+        /* Task name - full width block element */
+        .task-header-row > span[style*="fontSize: '16px'"],
+        .task-header-row > span[style*="font-size: 16px"] {
+          display: block !important;
           font-size: 14px !important;
-          flex-basis: 100% !important;
-          order: 1 !important;
+          margin-bottom: 8px !important;
         }
 
-        /* Deadline badge - compact styling, appears on second line */
-        .task-header-row > span:nth-child(2) {
+        /* Second line container for deadline and buttons */
+        .task-header-row > span:not(:first-child),
+        .task-header-row > button {
+          display: inline-block !important;
+          vertical-align: middle !important;
+          margin-right: 8px !important;
+        }
+
+        /* Deadline badge - compact styling */
+        .task-header-row > span[style*="padding"] {
           padding: 4px 8px !important;
           font-size: 11px !important;
-          order: 2 !important;
+          margin-right: 8px !important;
         }
 
-        /* Action buttons - appear on second line after deadline */
+        /* Action buttons */
         .task-action-button {
           min-width: 40px !important;
           min-height: 40px !important;
           padding: 8px !important;
-          flex-shrink: 0 !important;
-          order: 3 !important;
+          margin-right: 6px !important;
         }
 
         .task-action-button svg {
@@ -341,7 +346,7 @@
           padding: 6px 12px !important;
           font-size: 12px !important;
           min-height: 36px !important;
-          order: 3 !important;
+          margin-right: 6px !important;
         }
       }
     </style>
