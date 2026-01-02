@@ -1637,6 +1637,13 @@ const ScoringLegend = ({ setShowLegend }) => (
 // Completed Task Card Component
 const CompletedTaskCard = ({ task, onUncomplete }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const formatDateTime = (date) => {
     const d = new Date(date);
@@ -1662,7 +1669,7 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
       onMouseLeave={() => setIsHovered(false)}
       style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isMobile ? 'flex-start' : 'center',
         gap: '16px',
         padding: '12px 16px',
         backgroundColor: isHovered ? colors.bgHover : colors.bgSurface,
@@ -1683,6 +1690,7 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
           justifyContent: 'center',
           flexShrink: 0,
           cursor: 'pointer',
+          marginTop: isMobile ? '2px' : '0',
         }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
@@ -1690,22 +1698,30 @@ const CompletedTaskCard = ({ task, onUncomplete }) => {
         </svg>
       </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{
+        flex: 1,
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? '4px' : '16px',
+      }}>
         <span style={{
           color: colors.textSecondary,
           fontSize: '15px',
           textDecoration: 'line-through',
+          flex: isMobile ? 'none' : 1,
         }}>
           {task.name}
         </span>
-      </div>
 
-      <div style={{
-        fontSize: '13px',
-        color: colors.textDim,
-        flexShrink: 0,
-      }}>
-        {formatDateTime(task.completedAt)}
+        <div style={{
+          fontSize: '13px',
+          color: colors.textDim,
+          flexShrink: 0,
+        }}>
+          {formatDateTime(task.completedAt)}
+        </div>
       </div>
     </div>
   );
