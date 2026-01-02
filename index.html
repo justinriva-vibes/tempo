@@ -258,7 +258,7 @@
 
         /* TASK CARD MOBILE OPTIMIZATIONS */
 
-        /* Task card - stacked layout */
+        /* Task card - optimized layout */
         .task-card-content {
           flex-wrap: wrap !important;
           gap: 8px !important;
@@ -267,22 +267,28 @@
         /* First row: rank, checkbox, name */
         .task-rank {
           order: 1 !important;
-          width: 32px !important;
+          width: 24px !important;
+          font-size: 13px !important;
         }
 
         .task-checkbox {
           order: 2 !important;
-          width: 32px !important;
-          height: 32px !important;
+          width: 24px !important;
+          height: 24px !important;
         }
 
         .task-main {
           order: 3 !important;
-          flex: 1 1 100% !important;
-          min-width: 100% !important;
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
         }
 
-        /* Second row: score + actions */
+        /* Task name styling */
+        .task-main > div:first-child span:first-child {
+          font-size: 14px !important;
+        }
+
+        /* Second row: deadline, actions, and score */
         .task-score {
           order: 4 !important;
           margin-left: auto !important;
@@ -292,14 +298,22 @@
         }
 
         .task-header-row {
-          flex-wrap: wrap !important;
-          gap: 8px !important;
+          flex-wrap: nowrap !important;
+          gap: 6px !important;
+          align-items: center !important;
+        }
+
+        /* Compact deadline badge for mobile */
+        .task-header-row > span {
+          padding: 4px 8px !important;
+          font-size: 11px !important;
         }
 
         .task-action-button {
           min-width: 44px !important;
           min-height: 44px !important;
           padding: 8px !important;
+          flex-shrink: 0 !important;
         }
 
         .task-action-button svg {
