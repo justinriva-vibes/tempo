@@ -297,7 +297,7 @@ const TaskSummary = ({ name, impact, effort, step, isMobile }) => {
   return (
     <div style={{
       maxWidth: '480px',
-      margin: isMobile ? '0 auto 20px auto' : '0 auto 32px auto',
+      margin: isMobile ? '0 auto 12px auto' : '0 auto 32px auto',
       width: '100%',
       padding: '16px 20px',
       backgroundColor: colors.bgSurface,
@@ -470,7 +470,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '24px',
+        marginBottom: isMobile ? '16px' : '24px',
       }}>
         <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
           {taskCount > 0 ? `${taskCount} task${taskCount > 1 ? 's' : ''} added` : 'Adding task'}
@@ -497,7 +497,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
       <div style={{
         display: 'flex',
         gap: '8px',
-        marginBottom: isMobile ? '24px' : '48px',
+        marginBottom: isMobile ? '16px' : '48px',
       }}>
         {[0, 1, 2, 3].map(i => (
           <div
