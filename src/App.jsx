@@ -2658,7 +2658,7 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
           fontSize: '16px',
           marginBottom: '24px',
         }}>
-          You have {remainingTasks.length} incomplete {remainingTasks.length === 1 ? 'task' : 'tasks'} from yesterday. What would you like to do with them?
+          You have {remainingTasks.length} incomplete {remainingTasks.length === 1 ? 'task' : 'tasks'} from yesterday. What would you like to do with {remainingTasks.length === 1 ? 'it' : 'them'}?
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
