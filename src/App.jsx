@@ -955,6 +955,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             color: colors.textDim,
             fontSize: '13px',
             fontWeight: 600,
+            alignSelf: 'center',
           }}>
             {task.rank}
           </div>
@@ -974,6 +975,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
               justifyContent: 'center',
               transition: 'all 0.2s ease',
               cursor: 'pointer',
+              alignSelf: 'center',
             }}
           >
             {isCompleted && (
@@ -983,7 +985,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             )}
           </div>
 
-          <div style={{ gridColumn: '3', gridRow: '1', minWidth: 0 }}>
+          <div style={{ gridColumn: '3', gridRow: '1', minWidth: 0, alignSelf: 'center' }}>
             <div style={{ fontSize: '14px', color: colors.textPrimary, fontWeight: 600, textDecoration: isCompleted ? 'line-through' : 'none' }}>
               {task.name}
             </div>
@@ -998,7 +1000,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             fontSize: '13px',
             color: colors.textDim,
             fontWeight: 600,
-            alignSelf: 'start',
+            alignSelf: 'center',
           }}>
             {task.score}
           </div>
