@@ -471,6 +471,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: isMobile ? '16px' : '24px',
+        gap: isMobile ? '12px' : '0',
       }}>
         <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
           {taskCount > 0 ? `${taskCount} task${taskCount > 1 ? 's' : ''} added` : 'Adding task'}
