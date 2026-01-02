@@ -1099,6 +1099,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             gridRow: '3',
             color: colors.textSecondary,
             fontSize: '14px',
+            textAlign: 'center',
           }}>
             {task.reason}
           </div>
