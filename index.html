@@ -258,67 +258,92 @@
 
         /* TASK CARD MOBILE OPTIMIZATIONS */
 
-        /* Task card - optimized layout */
+        /* Task card - two-row layout */
         .task-card-content {
           flex-wrap: wrap !important;
           gap: 8px !important;
+          align-items: flex-start !important;
         }
 
-        /* First row: rank, checkbox, name */
+        /* First visual row: rank, checkbox, name */
         .task-rank {
           order: 1 !important;
           width: 24px !important;
           font-size: 13px !important;
+          flex-shrink: 0 !important;
         }
 
         .task-checkbox {
           order: 2 !important;
           width: 24px !important;
           height: 24px !important;
+          flex-shrink: 0 !important;
         }
 
         .task-main {
           order: 3 !important;
-          flex: 1 1 auto !important;
+          flex: 1 1 100% !important;
           min-width: 0 !important;
         }
 
-        /* Task name styling */
-        .task-main > div:first-child span:first-child {
+        /* Convert task-header-row to CSS Grid for better control */
+        .task-header-row {
+          display: grid !important;
+          grid-template-columns: 1fr auto auto auto !important;
+          grid-template-rows: auto auto !important;
+          gap: 8px 6px !important;
+          align-items: center !important;
+        }
+
+        /* Task name takes full width on first row */
+        .task-header-row > span:first-child {
+          grid-column: 1 / -1 !important;
+          grid-row: 1 !important;
           font-size: 14px !important;
         }
 
-        /* Second row: deadline, actions, and score */
-        .task-score {
-          order: 4 !important;
-          margin-left: auto !important;
-          min-height: 44px !important;
-          display: flex !important;
-          align-items: center !important;
-        }
-
-        .task-header-row {
-          flex-wrap: nowrap !important;
-          gap: 6px !important;
-          align-items: center !important;
-        }
-
-        /* Compact deadline badge for mobile */
-        .task-header-row > span {
+        /* Deadline badge on second row, first column */
+        .task-header-row > span:nth-child(2) {
+          grid-column: 1 !important;
+          grid-row: 2 !important;
           padding: 4px 8px !important;
           font-size: 11px !important;
+          justify-self: start !important;
+        }
+
+        /* Edit button on second row, second column */
+        .task-header-row > button:nth-of-type(1) {
+          grid-column: 2 !important;
+          grid-row: 2 !important;
+        }
+
+        /* Delete button (or confirmation buttons) on second row, third column */
+        .task-header-row > button:nth-of-type(2),
+        .task-header-row > button:nth-of-type(2) ~ button {
+          grid-column: 3 / -1 !important;
+          grid-row: 2 !important;
         }
 
         .task-action-button {
-          min-width: 44px !important;
-          min-height: 44px !important;
+          min-width: 40px !important;
+          min-height: 40px !important;
           padding: 8px !important;
           flex-shrink: 0 !important;
         }
 
         .task-action-button svg {
-          width: 20px !important;
-          height: 20px !important;
+          width: 18px !important;
+          height: 18px !important;
+        }
+
+        /* Score badge positioning */
+        .task-score {
+          order: 4 !important;
+          margin-left: auto !important;
+          min-height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          align-self: flex-end !important;
         }
       }
     </style>
