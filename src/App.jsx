@@ -2643,12 +2643,19 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
               }}
             >
               <div style={{
-                color: colors.textPrimary,
-                fontSize: '16px',
-                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
                 marginBottom: '12px',
               }}>
-                {task.name}
+                <div style={{
+                  color: colors.textPrimary,
+                  fontSize: '16px',
+                  fontWeight: 600,
+                }}>
+                  {task.name}
+                </div>
+                <DeadlineBadge deadline={task.deadline} />
               </div>
               <div style={{
                 color: colors.textSecondary,
