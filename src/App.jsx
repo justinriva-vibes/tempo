@@ -1010,7 +1010,6 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             display: 'flex',
             gap: '8px',
             alignItems: 'center',
-            paddingLeft: '56px', // Account for rank + checkbox width + gaps
           }}>
             <DeadlineBadge deadline={task.deadline} />
             <button
@@ -1099,7 +1098,6 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             gridRow: '3',
             color: colors.textSecondary,
             fontSize: '14px',
-            paddingLeft: '56px', // Account for rank + checkbox width + gaps
           }}>
             {task.reason}
           </div>
