@@ -515,7 +515,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
 
       <TaskSummary name={name} impact={impact} effort={effort} step={step} isMobile={isMobile} />
 
-      <div style={{ flex: 1, maxWidth: '480px', margin: '0 auto', width: '100%' }}>
+      <div style={{ flex: isMobile ? 'none' : 1, maxWidth: '480px', margin: '0 auto', width: '100%' }}>
         {step === 0 && (
           <>
             <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: isMobile ? '20px' : '32px' }}>
