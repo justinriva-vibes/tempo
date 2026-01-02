@@ -873,7 +873,14 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
   const [editImpact, setEditImpact] = useState(task.impact);
   const [editEffort, setEditEffort] = useState(task.effort);
   const [editDeadline, setEditDeadline] = useState(task.deadline);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const tier = tierConfig[task.tier];
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleComplete = () => {
     setIsCompleted(true);
@@ -930,44 +937,196 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         opacity: isCompleted ? 0.5 : 1,
       }}
     >
-      <div className="task-card-content">
-        {/* Rank number */}
-        <div className="task-rank" style={{
-          width: '24px',
-          textAlign: 'center',
-          color: colors.textDim,
-          fontSize: '14px',
-          fontWeight: 600,
-          flexShrink: 0,
+      {isMobile ? (
+        /* MOBILE LAYOUT */
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'auto auto 1fr auto',
+          gridTemplateRows: 'auto auto',
+          columnGap: '8px',
+          rowGap: '8px',
         }}>
-          {task.rank}
-        </div>
-
-        <div
-          className="task-checkbox"
-          onClick={handleComplete}
-          style={{
+          {/* Row 1: Rank, Checkbox, Task Name, Score */}
+          <div style={{
+            gridColumn: '1',
+            gridRow: '1',
             width: '24px',
-            height: '24px',
-            borderRadius: '50%',
-            border: `2px solid ${isCompleted ? colors.accentGreen : colors.textSecondary}`,
-            backgroundColor: isCompleted ? colors.accentGreen : 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            transition: 'all 0.2s ease',
-            cursor: 'pointer',
-          }}
-        >
-          {isCompleted && (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-        </div>
+            textAlign: 'center',
+            color: colors.textDim,
+            fontSize: '13px',
+            fontWeight: 600,
+          }}>
+            {task.rank}
+          </div>
 
-        <div className="task-main">
+          <div
+            onClick={handleComplete}
+            style={{
+              gridColumn: '2',
+              gridRow: '1',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              border: `2px solid ${isCompleted ? colors.accentGreen : colors.textSecondary}`,
+              backgroundColor: isCompleted ? colors.accentGreen : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+            }}
+          >
+            {isCompleted && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </div>
+
+          <div style={{ gridColumn: '3', gridRow: '1', minWidth: 0 }}>
+            <div style={{ fontSize: '14px', color: colors.textPrimary, fontWeight: 600, textDecoration: isCompleted ? 'line-through' : 'none', marginBottom: '6px' }}>
+              {task.name}
+            </div>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'nowrap' }}>
+              <DeadlineBadge deadline={task.deadline} />
+              <button
+                onClick={handleEdit}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '40px',
+                  minHeight: '40px',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+              {!isDeletingConfirm ? (
+                <button
+                  onClick={() => setIsDeletingConfirm(true)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '40px',
+                    minHeight: '40px',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.textSecondary} strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsDeletingConfirm(false)}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'transparent',
+                      color: colors.textSecondary,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDelete?.(task.id);
+                      setIsDeletingConfirm(false);
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: colors.urgent,
+                      color: colors.textPrimary,
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+            <div style={{ color: colors.textSecondary, fontSize: '14px', marginTop: '6px' }}>
+              {task.reason}
+            </div>
+          </div>
+
+          <div style={{
+            gridColumn: '4',
+            gridRow: '1',
+            padding: '6px 12px',
+            backgroundColor: colors.bgPrimary,
+            borderRadius: '16px',
+            fontSize: '13px',
+            color: colors.textDim,
+            fontWeight: 600,
+            alignSelf: 'start',
+          }}>
+            {task.score}
+          </div>
+        </div>
+      ) : (
+        /* DESKTOP LAYOUT */
+        <div className="task-card-content">
+          {/* Rank number */}
+          <div className="task-rank" style={{
+            width: '24px',
+            textAlign: 'center',
+            color: colors.textDim,
+            fontSize: '14px',
+            fontWeight: 600,
+            flexShrink: 0,
+          }}>
+            {task.rank}
+          </div>
+
+          <div
+            className="task-checkbox"
+            onClick={handleComplete}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              border: `2px solid ${isCompleted ? colors.accentGreen : colors.textSecondary}`,
+              backgroundColor: isCompleted ? colors.accentGreen : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+            }}
+          >
+            {isCompleted && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.bgPrimary} strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </div>
+
+          <div className="task-main">
           <div className="task-header-row" style={{
             marginBottom: '4px',
           }}>
@@ -1078,7 +1237,8 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         }}>
           {task.score}
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Inline edit form */}
       {isEditing && (
