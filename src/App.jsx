@@ -100,8 +100,8 @@ function generateReason(task, quadrant) {
     fill_in: 'Fill-in',
     time_sink: 'Time sink',
   };
-  const impactText = task.impact === 'high' ? 'high impact' : 'low impact';
-  const effortText = task.effort === 'low' ? 'low effort' : 'high effort';
+  const impactText = task.impact === 'high' ? 'High impact' : 'Low impact';
+  const effortText = task.effort === 'low' ? 'Low effort' : 'High effort';
   const deadlineText = {
     today: 'due today',
     this_week: 'due this week',
@@ -2298,14 +2298,14 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
               {(() => {
                 const quadrant = getQuadrant(task.impact, task.effort);
                 const quadrantLabels = {
-                  quick_win: 'Quick Win',
-                  big_bet: 'Big Bet',
-                  fill_in: 'Fill In',
-                  time_sink: 'Time Sink'
+                  quick_win: 'Quick win',
+                  big_bet: 'Big bet',
+                  fill_in: 'Fill-in',
+                  time_sink: 'Time sink'
                 };
-                const impactLabel = task.impact === 'high' ? 'High Impact' : 'Low Impact';
-                const effortLabel = task.effort === 'high' ? 'High Effort' : 'Low Effort';
-                return `${quadrantLabels[quadrant]} · ${impactLabel}, ${effortLabel}`;
+                const impactLabel = task.impact === 'high' ? 'High impact' : 'Low impact';
+                const effortLabel = task.effort === 'high' ? 'High effort' : 'Low effort';
+                return `${quadrantLabels[quadrant]} · ${impactLabel} · ${effortLabel}`;
               })()}
             </div>
             <div style={{ color: colors.textSecondary, fontSize: '13px' }}>
