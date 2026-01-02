@@ -291,13 +291,13 @@ const EmptyState = ({ onAddTask }) => (
 );
 
 // Task Summary Component
-const TaskSummary = ({ name, impact, effort, step }) => {
+const TaskSummary = ({ name, impact, effort, step, isMobile }) => {
   if (step === 0) return null;
 
   return (
     <div style={{
       maxWidth: '480px',
-      margin: '0 auto 32px auto',
+      margin: isMobile ? '0 auto 20px auto' : '0 auto 32px auto',
       width: '100%',
       padding: '16px 20px',
       backgroundColor: colors.bgSurface,
@@ -353,6 +353,13 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
   const [effort, setEffort] = useState(null);
   const [deadline, setDeadline] = useState(null);
   const [step, setStep] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const impactOptions = [
     { value: 'high', label: 'High impact' },
@@ -432,7 +439,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
       onClick={onClick}
       style={{
         width: '100%',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
         backgroundColor: selected ? colors.bgHover : colors.bgSurface,
         border: `2px solid ${selected ? colors.accentGreen : colors.border}`,
         borderRadius: '12px',
@@ -457,7 +464,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
       backgroundColor: colors.bgPrimary,
       display: 'flex',
       flexDirection: 'column',
-      padding: '40px',
+      padding: isMobile ? '20px' : '40px',
     }}>
       <div style={{
         display: 'flex',
@@ -490,7 +497,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
       <div style={{
         display: 'flex',
         gap: '8px',
-        marginBottom: '48px',
+        marginBottom: isMobile ? '24px' : '48px',
       }}>
         {[0, 1, 2, 3].map(i => (
           <div
@@ -506,12 +513,12 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
         ))}
       </div>
 
-      <TaskSummary name={name} impact={impact} effort={effort} step={step} />
+      <TaskSummary name={name} impact={impact} effort={effort} step={step} isMobile={isMobile} />
 
       <div style={{ flex: 1, maxWidth: '480px', margin: '0 auto', width: '100%' }}>
         {step === 0 && (
           <>
-            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: '32px' }}>
+            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: isMobile ? '20px' : '32px' }}>
               What do you need to do?
             </h2>
             <input
@@ -523,7 +530,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
               autoFocus
               style={{
                 width: '100%',
-                padding: '20px',
+                padding: isMobile ? '16px' : '20px',
                 backgroundColor: colors.bgSurface,
                 border: `2px solid ${name ? colors.accentGreen : colors.border}`,
                 borderRadius: '12px',
@@ -562,7 +569,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
               </svg>
               Back
             </button>
-            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: '32px' }}>
+            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: isMobile ? '20px' : '32px' }}>
               What's the impact?
             </h2>
 
@@ -754,7 +761,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
               </svg>
               Back
             </button>
-            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: '32px' }}>
+            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: isMobile ? '20px' : '32px' }}>
               What's the effort?
             </h2>
             {effortOptions.map(opt => (
@@ -795,7 +802,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
               </svg>
               Back
             </button>
-            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: '32px' }}>
+            <h2 style={{ color: colors.textPrimary, fontSize: '28px', fontWeight: 700, marginBottom: isMobile ? '20px' : '32px' }}>
               When does this need to be done?
             </h2>
             {deadlineOptions.map(opt => (
@@ -811,7 +818,7 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
         )}
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%', paddingTop: '24px' }}>
+      <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%', paddingTop: isMobile ? '16px' : '24px' }}>
         <button
           onClick={handleNext}
           disabled={!canProceed()}
