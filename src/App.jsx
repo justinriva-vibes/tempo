@@ -1032,7 +1032,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
             </button>
-            {!isDeletingConfirm ? (
+            {!isDeletingConfirm && (
               <button
                 onClick={() => setIsDeletingConfirm(true)}
                 style={{
@@ -1054,49 +1054,59 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
                   <line x1="14" y1="11" x2="14" y2="17" />
                 </svg>
               </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsDeletingConfirm(false)}
-                  style={{
-                    padding: '6px 12px',
-                    backgroundColor: 'transparent',
-                    color: colors.textSecondary,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete?.(task.id);
-                    setIsDeletingConfirm(false);
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    backgroundColor: colors.urgent,
-                    color: colors.textPrimary,
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Delete
-                </button>
-              </>
             )}
           </div>
 
-          {/* Row 3: Task reason spanning full width */}
+          {/* Row 2b: Delete confirmation buttons (only shown when confirming) */}
+          {isDeletingConfirm && (
+            <div style={{
+              gridColumn: '1 / 5',
+              gridRow: '3',
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <button
+                onClick={() => setIsDeletingConfirm(false)}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: 'transparent',
+                  color: colors.textSecondary,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDelete?.(task.id);
+                  setIsDeletingConfirm(false);
+                }}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: colors.urgent,
+                  color: colors.textPrimary,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+
+          {/* Row 3/4: Task reason spanning full width */}
           <div style={{
             gridColumn: '1 / 5',
-            gridRow: '3',
+            gridRow: isDeletingConfirm ? '4' : '3',
             color: colors.textSecondary,
             fontSize: '14px',
             textAlign: 'center',
