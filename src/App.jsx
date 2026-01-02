@@ -1010,6 +1010,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             display: 'flex',
             gap: '8px',
             alignItems: 'center',
+            justifyContent: 'center',
           }}>
             <DeadlineBadge deadline={task.deadline} />
             <button
