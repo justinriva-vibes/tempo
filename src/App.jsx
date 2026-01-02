@@ -13,6 +13,7 @@ const colors = {
   accentBlue: '#2E77D0',
   urgent: '#E35454',
   warning: '#F59E0B',
+  red: '#E35454',
 };
 
 // Tier configuration
@@ -2007,8 +2008,15 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 };
 
 // Archive Screen
-const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) => {
+const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanentDelete, onBack }) => {
   const [deletingTaskId, setDeletingTaskId] = useState(null);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+
+  const handleDeleteAll = () => {
+    setArchivedTasks([]);
+    setShowDeleteAllConfirm(false);
+    localStorage.setItem('tempo_archived_tasks', JSON.stringify([]));
+  };
 
   // Group tasks by date
   const groupTasksByDate = (tasks) => {
@@ -2265,8 +2273,82 @@ const ArchiveScreen = ({ archivedTasks, onRestore, onPermanentDelete, onBack }) 
         }}>
           Completed Archive
         </h1>
-        <div style={{ color: colors.textSecondary, fontSize: '14px', marginBottom: '32px' }}>
-          {archivedTasks.length} {archivedTasks.length === 1 ? 'task' : 'tasks'} archived
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '32px',
+          gap: '16px',
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            {archivedTasks.length} {archivedTasks.length === 1 ? 'task' : 'tasks'} archived
+          </div>
+
+          {archivedTasks.length > 0 && (
+            !showDeleteAllConfirm ? (
+              <button
+                onClick={() => setShowDeleteAllConfirm(true)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  color: colors.red,
+                  border: `1px solid ${colors.red}`,
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete All
+              </button>
+            ) : (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                backgroundColor: colors.bgSurface,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+              }}>
+                <span style={{ color: colors.textSecondary, fontSize: '13px' }}>
+                  ⚠️ Delete all archived tasks?
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => setShowDeleteAllConfirm(false)}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'transparent',
+                      color: colors.textSecondary,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAll}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: colors.red,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete All
+                  </button>
+                </div>
+              </div>
+            )
+          )}
         </div>
 
         {/* Content */}
@@ -2996,6 +3078,7 @@ export default function PriorityApp() {
       {screen === 'archive' && (
         <ArchiveScreen
           archivedTasks={archivedTasks}
+          setArchivedTasks={setArchivedTasks}
           onRestore={handleRestoreTask}
           onPermanentDelete={handlePermanentDelete}
           onBack={handleBackFromArchive}
