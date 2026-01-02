@@ -108,7 +108,7 @@ function generateReason(task, quadrant) {
     this_sprint: 'due this sprint',
     after_sprint: 'no rush',
   };
-  return `${quadrantLabels[quadrant]} · ${impactText} · ${effortText} · ${deadlineText[task.deadline]}`;
+  return `${quadrantLabels[quadrant]} · ${impactText} · ${effortText}`;
 }
 
 function rankTasks(tasks) {
