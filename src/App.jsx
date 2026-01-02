@@ -987,7 +987,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
             <div style={{ fontSize: '14px', color: colors.textPrimary, fontWeight: 600, textDecoration: isCompleted ? 'line-through' : 'none', marginBottom: '6px' }}>
               {task.name}
             </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', maxWidth: '100%' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'nowrap' }}>
               <DeadlineBadge deadline={task.deadline} />
               <button
                 onClick={handleEdit}
