@@ -304,29 +304,31 @@
         .task-header-row {
           display: flex !important;
           flex-wrap: wrap !important;
-          gap: 8px !important;
+          gap: 6px !important;
           align-items: center !important;
         }
 
-        /* Task name styling */
+        /* Task name styling - takes full width to force next line */
         .task-header-row > span:first-child {
           font-size: 14px !important;
-          flex: 1 1 100% !important;
-          margin-bottom: 4px !important;
+          flex-basis: 100% !important;
+          order: 1 !important;
         }
 
-        /* Deadline badge - compact styling */
+        /* Deadline badge - compact styling, appears on second line */
         .task-header-row > span:nth-child(2) {
           padding: 4px 8px !important;
           font-size: 11px !important;
+          order: 2 !important;
         }
 
-        /* Action buttons */
+        /* Action buttons - appear on second line after deadline */
         .task-action-button {
           min-width: 40px !important;
           min-height: 40px !important;
           padding: 8px !important;
           flex-shrink: 0 !important;
+          order: 3 !important;
         }
 
         .task-action-button svg {
@@ -339,6 +341,7 @@
           padding: 6px 12px !important;
           font-size: 12px !important;
           min-height: 36px !important;
+          order: 3 !important;
         }
       }
     </style>
