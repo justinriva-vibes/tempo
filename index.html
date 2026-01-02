@@ -284,19 +284,20 @@
         }
 
         .task-main {
-          grid-column: 3 / -1 !important;
+          grid-column: 3 !important;
           grid-row: 1 / 3 !important;
           min-width: 0 !important;
         }
 
-        /* Row 2: Score badge */
+        /* Score badge on row 1, same line as task name */
         .task-score {
           grid-column: 4 !important;
-          grid-row: 2 !important;
+          grid-row: 1 !important;
           min-height: 40px !important;
           display: flex !important;
           align-items: center !important;
           justify-self: end !important;
+          align-self: start !important;
         }
 
         /* task-header-row uses flex to layout its children horizontally */
