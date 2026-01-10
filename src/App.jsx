@@ -955,8 +955,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier, dragHandl
   const tier = tierConfig[task.tier];
 
   // Check if task has been manually moved (different tier or reordered within same tier)
-  // Exclude tasks with _isImplicitOrder (they got userOrder only to maintain relative positions)
-  const isManuallyMoved = (task.manualTier && task.manualTier !== task.calculatedTier) || (task.userOrder != null && !task._isImplicitOrder);
+  const isManuallyMoved = (task.manualTier && task.manualTier !== task.calculatedTier) || task.manuallyReordered;
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -3489,8 +3488,7 @@ export default function PriorityApp() {
       console.log('  Same-tier reorder:', reorderedTasks.map(t => t.name));
       console.log('  Moved task ID:', movedTaskId);
 
-      // Calculate userOrder for the moved task based on its new position
-      // We need to assign userOrder values to all tasks in the tier to maintain the exact order
+      // Calculate userOrder for all tasks in the tier to maintain the exact order
       const baseTimestamp = Date.now();
       const userOrderMap = {};
       reorderedTasks.forEach((task, index) => {
@@ -3499,25 +3497,21 @@ export default function PriorityApp() {
 
       console.log('  UserOrder assignments:', userOrderMap);
 
-      // Update all tasks in the tier with userOrder, marking them all as manually positioned
+      // Update all tasks in the tier with userOrder, but only mark the moved task as manuallyReordered
       const updatedTasks = tasks.map(task => {
         if (userOrderMap.hasOwnProperty(task.id)) {
-          // Check if this is the task that was actually moved
-          const originalIndex = reorderedTasks.findIndex(t => t.id === task.id && !task.userOrder);
-          const newIndex = reorderedTasks.findIndex(t => t.id === task.id);
           const wasMoved = task.id === movedTaskId;
-
           return {
             ...task,
             userOrder: userOrderMap[task.id],
-            // Only keep userOrder flag if this task was actually moved by the user
-            ...(wasMoved ? {} : { _isImplicitOrder: true })
+            // Only set manuallyReordered flag on the task that was actually dragged
+            manuallyReordered: wasMoved ? true : task.manuallyReordered,
           };
         }
         return task;
       });
 
-      console.log('  Updated tasks:', updatedTasks.filter(t => userOrderMap.hasOwnProperty(t.id)).map(t => ({ id: t.id, name: t.name, userOrder: t.userOrder, _isImplicitOrder: t._isImplicitOrder })));
+      console.log('  Updated tasks:', updatedTasks.filter(t => userOrderMap.hasOwnProperty(t.id)).map(t => ({ id: t.id, name: t.name, userOrder: t.userOrder, manuallyReordered: t.manuallyReordered })));
       setTasks(updatedTasks);
       console.log('✅ setTasks called with updated tasks');
     }
@@ -3526,10 +3520,10 @@ export default function PriorityApp() {
   const handleResetTier = (taskId) => {
     console.log('🔄 handleResetTier called for task:', taskId);
 
-    // Remove manualTier and userOrder to let the task return to its calculated tier
+    // Remove manualTier, userOrder, and manuallyReordered to let the task return to its calculated position
     const updatedTasks = tasks.map(task => {
       if (task.id === taskId) {
-        const { manualTier, userOrder, ...rest } = task;
+        const { manualTier, userOrder, manuallyReordered, ...rest } = task;
         console.log(`  Resetting task "${task.name}" - removing manual overrides`);
         return rest;
       }
