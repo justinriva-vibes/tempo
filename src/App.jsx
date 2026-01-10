@@ -1,4 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  TouchSensor,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // Color palette
 const colors = {
@@ -112,26 +129,79 @@ function generateReason(task, quadrant) {
 }
 
 function rankTasks(tasks) {
+  console.log('📊 rankTasks called with:', tasks.map(t => ({ id: t.id, name: t.name, userOrder: t.userOrder, manualTier: t.manualTier })));
+
   const ranked = tasks.map(task => {
     const quadrant = getQuadrant(task.impact, task.effort);
     const score = calculateScore(quadrant, task.deadline);
-    const tier = getTier(score);
+    const calculatedTier = getTier(score);
     const reason = generateReason(task, quadrant);
-    return { ...task, quadrant, tier, score, reason };
+
+    // Use manualTier if set, otherwise use calculated tier
+    const tier = task.manualTier || calculatedTier;
+
+    return { ...task, quadrant, tier, calculatedTier, score, reason };
   });
 
   ranked.sort((a, b) => {
-    // Primary: Sort by score
-    if (b.score !== a.score) return b.score - a.score;
+    console.log(`🔍 Comparing: ${a.name}(tier:${a.tier}, score:${a.score}, userOrder:${a.userOrder}) vs ${b.name}(tier:${b.tier}, score:${b.score}, userOrder:${b.userOrder})`);
 
-    // Secondary: Sort by deadline urgency
+    // Primary: Sort by tier priority (keep tiers separated)
+    if (a.tier !== b.tier) {
+      const tierOrder = { do_today: 0, should_do: 1, could_do: 2, defer: 3 };
+      const tierDiff = tierOrder[a.tier] - tierOrder[b.tier];
+      console.log(`  → Different tiers (${a.tier} vs ${b.tier}), sorting by tier priority`);
+      return tierDiff;
+    }
+
+    // Secondary: Within same tier, use userOrder if available
+    const aHasUserOrder = a.userOrder != null;
+    const bHasUserOrder = b.userOrder != null;
+
+    console.log(`  → Same tier! aHasUserOrder:${aHasUserOrder}, bHasUserOrder:${bHasUserOrder}`);
+
+    // Both have userOrder - sort by userOrder (ascending = earlier drag comes first)
+    if (aHasUserOrder && bHasUserOrder) {
+      console.log(`  → Both have userOrder, sorting by userOrder: ${a.userOrder} vs ${b.userOrder}`);
+      return a.userOrder - b.userOrder;
+    }
+
+    // Only one has userOrder - userOrder comes first
+    if (aHasUserOrder && !bHasUserOrder) {
+      console.log(`  → Only A has userOrder, A comes first`);
+      return -1;
+    }
+    if (!aHasUserOrder && bHasUserOrder) {
+      console.log(`  → Only B has userOrder, B comes first`);
+      return 1;
+    }
+
+    // Tertiary: Within same tier, no userOrder - sort by score
+    if (b.score !== a.score) {
+      console.log(`  → No userOrder, sorting by score`);
+      return b.score - a.score;
+    }
+
+    // Quaternary: Sort by deadline urgency
     const deadlineOrder = { today: 0, this_week: 1, this_sprint: 2, after_sprint: 3 };
     const deadlineDiff = deadlineOrder[a.deadline] - deadlineOrder[b.deadline];
-    if (deadlineDiff !== 0) return deadlineDiff;
+    if (deadlineDiff !== 0) {
+      console.log(`  → Sorting by deadline`);
+      return deadlineDiff;
+    }
 
-    // Tertiary: Sort by creation time
+    // Final: Sort by creation time
+    console.log(`  → Sorting by creation time`);
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
+
+  console.log('📊 rankTasks result:', ranked.map(t => ({ id: t.id, name: t.name, tier: t.tier, calculatedTier: t.calculatedTier, userOrder: t.userOrder, score: t.score })));
+
+  // Extra logging for do_today tier
+  const doTodayTasks = ranked.filter(t => t.tier === 'do_today');
+  if (doTodayTasks.length > 1) {
+    console.log('🎯 DO TODAY tier tasks in final order:', doTodayTasks.map(t => ({ name: t.name, userOrder: t.userOrder, score: t.score })));
+  }
 
   return ranked;
 }
@@ -872,7 +942,7 @@ const DeadlineBadge = ({ deadline }) => {
 };
 
 // Task Card Component
-const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
+const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -883,6 +953,9 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
   const [editDeadline, setEditDeadline] = useState(task.deadline);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const tier = tierConfig[task.tier];
+
+  // Check if task has been manually moved to a different tier
+  const isManuallyMoved = task.manualTier && task.manualTier !== task.calculatedTier;
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -940,7 +1013,9 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
         padding: '16px',
         backgroundColor: isHovered ? colors.bgHover : colors.bgSurface,
         borderRadius: '8px',
-        borderLeft: `4px solid ${tier.color}`,
+        borderLeft: isManuallyMoved
+          ? `4px dashed ${colors.warning}`
+          : `4px solid ${tier.color}`,
         transition: 'all 0.2s ease',
         opacity: isCompleted ? 0.5 : 1,
       }}
@@ -1178,6 +1253,30 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
               {task.name}
             </span>
             <DeadlineBadge deadline={task.deadline} />
+
+            {/* Reset tier button - only show if manually moved */}
+            {isManuallyMoved && (
+              <button
+                className="task-action-button"
+                onClick={() => onResetTier?.(task.id)}
+                title="Reset to calculated tier"
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.warning} strokeWidth="2">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+              </button>
+            )}
+
             {/* Edit icon - always visible */}
             <button
               className="task-action-button"
@@ -1467,8 +1566,33 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete }) => {
   );
 };
 
+// Sortable Task Card Wrapper
+const SortableTaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TaskCard task={task} onComplete={onComplete} onUpdate={onUpdate} onDelete={onDelete} onResetTier={onResetTier} />
+    </div>
+  );
+};
+
 // Tier Section Component
-const TierSection = ({ tier, tasks, onComplete, onUpdate, onDelete }) => {
+const TierSection = ({ tier, tasks, onComplete, onUpdate, onDelete, onResetTier }) => {
   const config = tierConfig[tier];
   if (tasks.length === 0) return null;
 
@@ -1513,7 +1637,14 @@ const TierSection = ({ tier, tasks, onComplete, onUpdate, onDelete }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onComplete={onComplete} onUpdate={onUpdate} onDelete={onDelete} />
+          <SortableTaskCard
+            key={task.id}
+            task={task}
+            onComplete={onComplete}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            onResetTier={onResetTier}
+          />
         ))}
       </div>
     </div>
@@ -1775,12 +1906,31 @@ const CompletedSection = ({ tasks, onUncomplete }) => {
 };
 
 // Main Dashboard Screen
-const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onDeleteTask, onViewArchive, archivedTasksCount }) => {
+const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAddTask, onClearAllData, onClearCompleted, onUpdateTask, onDeleteTask, onViewArchive, archivedTasksCount, onReorderTasks, onResetTier }) => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showBottomClearConfirm, setShowBottomClearConfirm] = useState(false);
   const [showMenuClearConfirm, setShowMenuClearConfirm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [activeId, setActiveId] = useState(null);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -1808,7 +1958,71 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
     defer: tasksWithRank.filter((t) => t.tier === 'defer'),
   };
 
+  console.log('🗂️ Tasks grouped by tier:', {
+    do_today: groupedTasks.do_today.length,
+    should_do: groupedTasks.should_do.length,
+    could_do: groupedTasks.could_do.length,
+    defer: groupedTasks.defer.length,
+  });
+
   const dueToday = tasksWithRank.filter(t => t.deadline === 'today').length;
+
+  // Drag and drop handlers
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+    console.log('🚀 Drag started:', event.active.id);
+  };
+
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      console.log('🔄 Drag over - Active:', active.id, 'Over:', over.id);
+    }
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    console.log('🎯 Drag ended - Active:', active?.id, 'Over:', over?.id);
+
+    if (!over) {
+      console.log('❌ No drop target');
+      return;
+    }
+
+    // Find the dragged task and target task
+    const activeTask = tasksWithRank.find(t => t.id === active.id);
+    const overTask = tasksWithRank.find(t => t.id === over.id);
+
+    if (!activeTask || !overTask) {
+      console.log('❌ Could not find tasks');
+      return;
+    }
+
+    const activeTier = activeTask.tier;
+    const overTier = overTask.tier;
+
+    console.log(`Moving from ${activeTier} to ${overTier}`);
+
+    // Handle cross-tier movement
+    if (activeTier !== overTier) {
+      console.log('✨ Cross-tier drag detected');
+      const targetTierTasks = groupedTasks[overTier];
+      onReorderTasks(activeTier, overTier, activeTask, overTask, targetTierTasks);
+    } else {
+      // Same tier reordering
+      console.log('📍 Same-tier reordering');
+      const tierTasks = groupedTasks[activeTier];
+      const oldIndex = tierTasks.findIndex(t => t.id === active.id);
+      const newIndex = tierTasks.findIndex(t => t.id === over.id);
+
+      if (oldIndex !== newIndex) {
+        const reorderedTasks = arrayMove(tierTasks, oldIndex, newIndex);
+        onReorderTasks(activeTier, activeTier, reorderedTasks);
+      }
+    }
+  };
 
   const formatDate = () => {
     const now = new Date();
@@ -2108,14 +2322,27 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
         {showMatrix && <MatrixView tasks={tasks} setShowMatrix={setShowMatrix} />}
         {showLegend && <ScoringLegend setShowLegend={setShowLegend} />}
 
-        <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: '24px' }}>
-          <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
-          <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
-          <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
-          <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={tasksWithRank.map(t => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: '24px' }}>
+              <TierSection tier="do_today" tasks={groupedTasks.do_today} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} onResetTier={onResetTier} />
+              <TierSection tier="should_do" tasks={groupedTasks.should_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} onResetTier={onResetTier} />
+              <TierSection tier="could_do" tasks={groupedTasks.could_do} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} onResetTier={onResetTier} />
+              <TierSection tier="defer" tasks={groupedTasks.defer} onComplete={onComplete} onUpdate={onUpdateTask} onDelete={onDeleteTask} onResetTier={onResetTier} />
 
-          <CompletedSection tasks={completedTasks} onUncomplete={onUncomplete} />
-        </div>
+              <CompletedSection tasks={completedTasks} onUncomplete={onUncomplete} />
+            </div>
+          </SortableContext>
+        </DndContext>
 
         {tasks.length === 0 && completedTasks.length > 0 && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
@@ -2910,12 +3137,14 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
 export default function PriorityApp() {
   const [screen, setScreen] = useState('welcome');
   const [tasks, setTasks] = useState([]);
-  const [rankedTasks, setRankedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [archivedTasks, setArchivedTasks] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showDailyReview, setShowDailyReview] = useState(false);
   const [tasksToReview, setTasksToReview] = useState([]);
+
+  // Compute ranked tasks as derived state
+  const rankedTasks = useMemo(() => rankTasks(tasks), [tasks]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -2967,7 +3196,6 @@ export default function PriorityApp() {
         }
 
         setTasks(restored);
-        setRankedTasks(rankTasks(restored));
       }
 
       if (savedCompletedTasks) {
@@ -3066,8 +3294,6 @@ export default function PriorityApp() {
   };
 
   const handleDoneAdding = () => {
-    const ranked = rankTasks(tasks);
-    setRankedTasks(ranked);
     setScreen('dashboard');
   };
 
@@ -3081,7 +3307,6 @@ export default function PriorityApp() {
     }
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
-    setRankedTasks(rankTasks(updatedTasks));
   };
 
   const handleUncomplete = (taskId) => {
@@ -3090,7 +3315,6 @@ export default function PriorityApp() {
       const { completedAt, quadrant, tier, score, reason, ...originalTask } = taskToRestore;
       const updatedTasks = [...tasks, originalTask];
       setTasks(updatedTasks);
-      setRankedTasks(rankTasks(updatedTasks));
     }
     setCompletedTasks(completedTasks.filter(t => t.id !== taskId));
   };
@@ -3125,19 +3349,114 @@ export default function PriorityApp() {
       t.id === taskId ? { ...t, ...updates } : t
     );
     setTasks(updatedTasks);
-    setRankedTasks(rankTasks(updatedTasks));
   };
 
   const handleDeleteTask = (taskId) => {
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
-    setRankedTasks(rankTasks(updatedTasks));
+  };
+
+  const handleReorderTasks = (fromTier, toTier, activeOrTasks, overTask, targetTierTasks) => {
+    console.log('🔄 handleReorderTasks called');
+    console.log('  From tier:', fromTier, '  To tier:', toTier);
+
+    // Handle cross-tier drag (when moving between different tiers)
+    if (fromTier !== toTier && activeOrTasks.id) {
+      const activeTask = activeOrTasks;
+      console.log(`✨ Moving task "${activeTask.name}" from ${fromTier} to ${toTier}`);
+
+      // Find the position where the task should be inserted in the target tier
+      const dropIndex = targetTierTasks.findIndex(t => t.id === overTask.id);
+      console.log(`  Drop position in ${toTier} tier: ${dropIndex}`);
+
+      // Create a new array with the task inserted at the drop position
+      const tasksInTargetTier = [...targetTierTasks];
+      tasksInTargetTier.splice(dropIndex, 0, activeTask);
+
+      // Assign userOrder timestamps to all tasks in the target tier
+      const baseTimestamp = Date.now();
+      const userOrderMap = {};
+      tasksInTargetTier.forEach((task, index) => {
+        userOrderMap[task.id] = baseTimestamp + index;
+      });
+
+      console.log('  UserOrder assignments for target tier:', userOrderMap);
+
+      // Update all tasks: set manualTier for moved task, and update userOrder for all tasks in target tier
+      const updatedTasks = tasks.map(task => {
+        if (task.id === activeTask.id) {
+          // The moved task gets manualTier and userOrder
+          return {
+            ...task,
+            manualTier: toTier,
+            userOrder: userOrderMap[task.id],
+          };
+        } else if (userOrderMap.hasOwnProperty(task.id)) {
+          // Other tasks in the target tier get updated userOrder
+          return {
+            ...task,
+            userOrder: userOrderMap[task.id],
+          };
+        }
+        return task;
+      });
+
+      setTasks(updatedTasks);
+      console.log('✅ Task moved to different tier at position', dropIndex);
+      return;
+    }
+
+    // Handle same-tier reordering
+    if (Array.isArray(activeOrTasks)) {
+      const reorderedTasks = activeOrTasks;
+      console.log('  Same-tier reorder:', reorderedTasks.map(t => t.name));
+
+      // Create a mapping of task ID to userOrder timestamp
+      const baseTimestamp = Date.now();
+      const userOrders = {};
+      reorderedTasks.forEach((task, index) => {
+        userOrders[task.id] = baseTimestamp + index;
+      });
+
+      console.log('  UserOrders assigned:', userOrders);
+
+      // Update tasks with userOrder timestamps
+      const updatedTasks = tasks.map(task => {
+        if (userOrders.hasOwnProperty(task.id)) {
+          return {
+            ...task,
+            userOrder: userOrders[task.id],
+          };
+        }
+        return task;
+      });
+
+      console.log('  Updated tasks:', updatedTasks.map(t => ({ id: t.id, name: t.name, userOrder: t.userOrder })));
+      setTasks(updatedTasks);
+      console.log('✅ setTasks called with updated tasks');
+    }
+  };
+
+  const handleResetTier = (taskId) => {
+    console.log('🔄 handleResetTier called for task:', taskId);
+
+    // Remove manualTier and userOrder to let the task return to its calculated tier
+    const updatedTasks = tasks.map(task => {
+      if (task.id === taskId) {
+        const { manualTier, userOrder, ...rest } = task;
+        console.log(`  Resetting task "${task.name}" - removing manual overrides`);
+        return rest;
+      }
+      return task;
+    });
+
+    setTasks(updatedTasks);
+    console.log('✅ Task reset to calculated tier');
   };
 
   const handleClearAllData = () => {
     // Only clear active tasks, not completed or archived
     setTasks([]);
-    setRankedTasks([]);
     localStorage.removeItem('tempo_tasks');
   };
 
@@ -3162,7 +3481,6 @@ export default function PriorityApp() {
     }
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
-    setRankedTasks(rankTasks(updatedTasks));
 
     // Add to reviewed tasks in localStorage
     const yesterday = new Date();
@@ -3185,7 +3503,6 @@ export default function PriorityApp() {
         t.id === taskId ? { ...t, deadline: newDeadline } : t
       );
       setTasks(updatedTasks);
-      setRankedTasks(rankTasks(updatedTasks));
     }
     // Otherwise, task stays in the list as-is
 
@@ -3207,7 +3524,6 @@ export default function PriorityApp() {
     // Remove from tasks without marking complete
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
-    setRankedTasks(rankTasks(updatedTasks));
 
     // Add to reviewed tasks in localStorage
     const yesterday = new Date();
@@ -3234,7 +3550,6 @@ export default function PriorityApp() {
 
     // Clear all tasks without marking them complete
     setTasks([]);
-    setRankedTasks([]);
     setShowDailyReview(false);
     setTasksToReview([]);
     localStorage.setItem('tempo_last_login_date', new Date().toDateString());
@@ -3287,6 +3602,8 @@ export default function PriorityApp() {
           onDeleteTask={handleDeleteTask}
           onViewArchive={handleViewArchive}
           archivedTasksCount={archivedTasks.length}
+          onReorderTasks={handleReorderTasks}
+          onResetTier={handleResetTier}
         />
       )}
 
