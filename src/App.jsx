@@ -2104,7 +2104,7 @@ const DashboardScreen = ({ tasks, completedTasks, onComplete, onUncomplete, onAd
 
       if (oldIndex !== newIndex) {
         const reorderedTasks = arrayMove(tierTasks, oldIndex, newIndex);
-        onReorderTasks(activeTier, activeTier, reorderedTasks);
+        onReorderTasks(activeTier, activeTier, reorderedTasks, null, null, active.id);
       }
     }
   };
@@ -3441,7 +3441,7 @@ export default function PriorityApp() {
     setTasks(updatedTasks);
   };
 
-  const handleReorderTasks = (fromTier, toTier, activeOrTasks, overTask, targetTierTasks) => {
+  const handleReorderTasks = (fromTier, toTier, activeOrTasks, overTask, targetTierTasks, movedTaskId) => {
     console.log('🔄 handleReorderTasks called');
     console.log('  From tier:', fromTier, '  To tier:', toTier);
 
@@ -3458,29 +3458,20 @@ export default function PriorityApp() {
       const tasksInTargetTier = [...targetTierTasks];
       tasksInTargetTier.splice(dropIndex, 0, activeTask);
 
-      // Assign userOrder timestamps to all tasks in the target tier
+      // Find the new position index for the moved task in the target tier
       const baseTimestamp = Date.now();
-      const userOrderMap = {};
-      tasksInTargetTier.forEach((task, index) => {
-        userOrderMap[task.id] = baseTimestamp + index;
-      });
+      const movedTaskNewIndex = tasksInTargetTier.findIndex(t => t.id === activeTask.id);
 
-      console.log('  UserOrder assignments for target tier:', userOrderMap);
+      console.log('  Moved task new index in target tier:', movedTaskNewIndex);
 
-      // Update all tasks: set manualTier for moved task, and update userOrder for all tasks in target tier
+      // Update only the moved task: set manualTier and userOrder
       const updatedTasks = tasks.map(task => {
         if (task.id === activeTask.id) {
           // The moved task gets manualTier and userOrder
           return {
             ...task,
             manualTier: toTier,
-            userOrder: userOrderMap[task.id],
-          };
-        } else if (userOrderMap.hasOwnProperty(task.id)) {
-          // Other tasks in the target tier get updated userOrder
-          return {
-            ...task,
-            userOrder: userOrderMap[task.id],
+            userOrder: baseTimestamp + movedTaskNewIndex,
           };
         }
         return task;
@@ -3492,31 +3483,29 @@ export default function PriorityApp() {
     }
 
     // Handle same-tier reordering
-    if (Array.isArray(activeOrTasks)) {
+    if (Array.isArray(activeOrTasks) && movedTaskId) {
       const reorderedTasks = activeOrTasks;
       console.log('  Same-tier reorder:', reorderedTasks.map(t => t.name));
+      console.log('  Moved task ID:', movedTaskId);
 
-      // Create a mapping of task ID to userOrder timestamp
+      // Only assign userOrder to the task that was actually moved
       const baseTimestamp = Date.now();
-      const userOrders = {};
-      reorderedTasks.forEach((task, index) => {
-        userOrders[task.id] = baseTimestamp + index;
-      });
+      const movedTaskIndex = reorderedTasks.findIndex(t => t.id === movedTaskId);
 
-      console.log('  UserOrders assigned:', userOrders);
+      console.log('  Assigning userOrder only to moved task:', movedTaskId, 'at index:', movedTaskIndex);
 
-      // Update tasks with userOrder timestamps
+      // Update only the moved task with userOrder
       const updatedTasks = tasks.map(task => {
-        if (userOrders.hasOwnProperty(task.id)) {
+        if (task.id === movedTaskId) {
           return {
             ...task,
-            userOrder: userOrders[task.id],
+            userOrder: baseTimestamp + movedTaskIndex,
           };
         }
         return task;
       });
 
-      console.log('  Updated tasks:', updatedTasks.map(t => ({ id: t.id, name: t.name, userOrder: t.userOrder })));
+      console.log('  Updated only moved task:', updatedTasks.find(t => t.id === movedTaskId));
       setTasks(updatedTasks);
       console.log('✅ setTasks called with updated tasks');
     }
