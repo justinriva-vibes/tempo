@@ -1125,6 +1125,32 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier, dragHandl
             justifyContent: 'center',
           }}>
             <DeadlineBadge deadline={task.deadline} />
+
+            {/* Reset tier button - only show if manually moved */}
+            {isManuallyMoved && (
+              <button
+                onClick={() => onResetTier?.(task.id)}
+                title="Reset to calculated tier"
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '40px',
+                  minHeight: '40px',
+                  alignSelf: 'center',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.warning} strokeWidth="2">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+              </button>
+            )}
+
             <button
               onClick={handleEdit}
               style={{
