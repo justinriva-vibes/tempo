@@ -942,7 +942,7 @@ const DeadlineBadge = ({ deadline }) => {
 };
 
 // Task Card Component
-const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
+const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier, dragHandleListeners }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -1024,14 +1024,41 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
         /* MOBILE LAYOUT */
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'auto auto 1fr auto',
+          gridTemplateColumns: 'auto auto auto 1fr auto',
           gridTemplateRows: 'auto auto auto',
           columnGap: '8px',
           rowGap: '8px',
         }}>
+          {/* Drag Handle */}
+          <div
+            className="drag-handle"
+            {...dragHandleListeners}
+            style={{
+              gridColumn: '1',
+              gridRow: '1 / 3',
+              width: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              touchAction: 'none',
+              color: colors.textDim,
+              opacity: 0.6,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="4" cy="3" r="1.5" />
+              <circle cx="4" cy="8" r="1.5" />
+              <circle cx="4" cy="13" r="1.5" />
+              <circle cx="12" cy="3" r="1.5" />
+              <circle cx="12" cy="8" r="1.5" />
+              <circle cx="12" cy="13" r="1.5" />
+            </svg>
+          </div>
+
           {/* Row 1: Rank, Checkbox, Task Name, Score */}
           <div style={{
-            gridColumn: '1',
+            gridColumn: '2',
             gridRow: '1',
             width: '24px',
             textAlign: 'center',
@@ -1046,7 +1073,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
           <div
             onClick={handleComplete}
             style={{
-              gridColumn: '2',
+              gridColumn: '3',
               gridRow: '1',
               width: '24px',
               height: '24px',
@@ -1068,14 +1095,14 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
             )}
           </div>
 
-          <div style={{ gridColumn: '3', gridRow: '1', minWidth: 0, alignSelf: 'center' }}>
+          <div style={{ gridColumn: '4', gridRow: '1', minWidth: 0, alignSelf: 'center' }}>
             <div style={{ fontSize: '14px', color: colors.textPrimary, fontWeight: 600, textDecoration: isCompleted ? 'line-through' : 'none' }}>
               {task.name}
             </div>
           </div>
 
           <div style={{
-            gridColumn: '4',
+            gridColumn: '5',
             gridRow: '1',
             padding: '6px 12px',
             backgroundColor: colors.bgPrimary,
@@ -1090,7 +1117,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
 
           {/* Row 2: Deadline badge and action buttons spanning full width */}
           <div style={{
-            gridColumn: '1 / 5',
+            gridColumn: '2 / 6',
             gridRow: '2',
             display: 'flex',
             gap: '8px',
@@ -1147,7 +1174,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
           {/* Row 2b: Delete confirmation buttons (only shown when confirming) */}
           {isDeletingConfirm && (
             <div style={{
-              gridColumn: '1 / 5',
+              gridColumn: '2 / 6',
               gridRow: '3',
               display: 'flex',
               gap: '8px',
@@ -1192,7 +1219,7 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
 
           {/* Row 3/4: Task reason spanning full width */}
           <div style={{
-            gridColumn: '1 / 5',
+            gridColumn: '2 / 6',
             gridRow: isDeletingConfirm ? '4' : '3',
             color: colors.textSecondary,
             fontSize: '14px',
@@ -1204,6 +1231,32 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier }) => {
       ) : (
         /* DESKTOP LAYOUT */
         <div className="task-card-content">
+          {/* Drag Handle */}
+          <div
+            className="drag-handle"
+            {...dragHandleListeners}
+            style={{
+              width: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              touchAction: 'none',
+              color: colors.textDim,
+              opacity: 0.4,
+              flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="4" cy="3" r="1.5" />
+              <circle cx="4" cy="8" r="1.5" />
+              <circle cx="4" cy="13" r="1.5" />
+              <circle cx="12" cy="3" r="1.5" />
+              <circle cx="12" cy="8" r="1.5" />
+              <circle cx="12" cy="13" r="1.5" />
+            </svg>
+          </div>
+
           {/* Rank number */}
           <div className="task-rank" style={{
             width: '24px',
@@ -1581,12 +1634,18 @@ const SortableTaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier })
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: 'grab',
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskCard task={task} onComplete={onComplete} onUpdate={onUpdate} onDelete={onDelete} onResetTier={onResetTier} />
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <TaskCard
+        task={task}
+        onComplete={onComplete}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        onResetTier={onResetTier}
+        dragHandleListeners={listeners}
+      />
     </div>
   );
 };
