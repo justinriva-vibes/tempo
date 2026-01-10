@@ -337,6 +337,41 @@
           width: 18px !important;
           height: 18px !important;
         }
+
+        /* Reset button - ensure it's visible and touchable on mobile */
+        .task-header-row > button[title="Reset to calculated tier"] {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-width: 32px !important;
+          min-height: 32px !important;
+          padding: 6px !important;
+        }
+
+        .task-header-row > button[title="Reset to calculated tier"] svg {
+          width: 16px !important;
+          height: 16px !important;
+        }
+
+        /* Drag handle - improve mobile touch experience */
+        .task-card-content {
+          cursor: grab !important;
+          touch-action: none !important;
+        }
+
+        .task-card-content:active {
+          cursor: grabbing !important;
+        }
+
+        /* Ensure dragged tasks have proper opacity on mobile */
+        [style*="opacity: 0.5"] {
+          opacity: 0.5 !important;
+        }
+
+        /* Manual tier indicator - make dashed border more visible on mobile */
+        div[style*="border-left"][style*="dashed"] {
+          border-left-width: 4px !important;
+        }
       }
     </style>
   </head>
