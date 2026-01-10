@@ -954,8 +954,8 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier, dragHandl
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const tier = tierConfig[task.tier];
 
-  // Check if task has been manually moved to a different tier
-  const isManuallyMoved = task.manualTier && task.manualTier !== task.calculatedTier;
+  // Check if task has been manually moved (different tier or reordered within same tier)
+  const isManuallyMoved = (task.manualTier && task.manualTier !== task.calculatedTier) || task.userOrder != null;
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
