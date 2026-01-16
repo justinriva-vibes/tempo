@@ -2538,11 +2538,11 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
 
   // Group tasks by date
   const groupTasksByDate = (tasks) => {
-    // Group tasks by their completion date (archivedAt)
+    // Group tasks by their completion date (completedAt)
     const groups = {};
 
     tasks.forEach(task => {
-      const date = new Date(task.archivedAt);
+      const date = new Date(task.completedAt);
       // Format as "Month Day, Year" (e.g., "January 16, 2026")
       const dateKey = date.toLocaleDateString('en-US', {
         year: 'numeric',
