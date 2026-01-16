@@ -52,8 +52,8 @@ const QUADRANT_SCORES = {
 const DEADLINE_MODIFIERS = {
   today: 30,
   this_week: 15,
-  this_sprint: 0,
-  after_sprint: -10,
+  next_week: 0,
+  after_next_week: -10,
 };
 
 const TIER_THRESHOLDS = {
@@ -122,8 +122,8 @@ function generateReason(task, quadrant) {
   const deadlineText = {
     today: 'due today',
     this_week: 'due this week',
-    this_sprint: 'due this sprint',
-    after_sprint: 'no rush',
+    next_week: 'due next week',
+    after_next_week: 'no rush',
   };
   return `${quadrantLabels[quadrant]} · ${impactText} · ${effortText}`;
 }
@@ -154,19 +154,17 @@ function rankTasks(tasks) {
       return tierDiff;
     }
 
-    // Secondary: Within same tier, use userOrder if available
+    // Secondary: Check if any task has userOrder (manual positioning)
     const aHasUserOrder = a.userOrder != null;
     const bHasUserOrder = b.userOrder != null;
 
-    console.log(`  → Same tier! aHasUserOrder:${aHasUserOrder}, bHasUserOrder:${bHasUserOrder}`);
-
-    // Both have userOrder - sort by userOrder (ascending = earlier drag comes first)
+    // If both have userOrder, sort by userOrder (manual positioning overrides score)
     if (aHasUserOrder && bHasUserOrder) {
       console.log(`  → Both have userOrder, sorting by userOrder: ${a.userOrder} vs ${b.userOrder}`);
       return a.userOrder - b.userOrder;
     }
 
-    // Only one has userOrder - userOrder comes first
+    // If only one has userOrder, it comes first (manual positioning takes priority)
     if (aHasUserOrder && !bHasUserOrder) {
       console.log(`  → Only A has userOrder, A comes first`);
       return -1;
@@ -176,14 +174,14 @@ function rankTasks(tasks) {
       return 1;
     }
 
-    // Tertiary: Within same tier, no userOrder - sort by score
+    // Tertiary: Neither has userOrder, sort by score (descending - higher scores first)
     if (b.score !== a.score) {
-      console.log(`  → No userOrder, sorting by score`);
+      console.log(`  → No userOrder, sorting by score: ${b.score} vs ${a.score}`);
       return b.score - a.score;
     }
 
     // Quaternary: Sort by deadline urgency
-    const deadlineOrder = { today: 0, this_week: 1, this_sprint: 2, after_sprint: 3 };
+    const deadlineOrder = { today: 0, this_week: 1, next_week: 2, after_next_week: 3 };
     const deadlineDiff = deadlineOrder[a.deadline] - deadlineOrder[b.deadline];
     if (deadlineDiff !== 0) {
       console.log(`  → Sorting by deadline`);
@@ -456,15 +454,15 @@ const AddTaskScreen = ({ onSave, onDone, taskCount }) => {
   ];
 
   const effortOptions = [
-    { value: 'low', label: 'Low effort', desc: 'Quick, easy, minimal friction' },
     { value: 'high', label: 'High effort', desc: 'Significant time or energy' },
+    { value: 'low', label: 'Low effort', desc: 'Quick, easy, minimal friction' },
   ];
 
   const deadlineOptions = [
     { value: 'today', label: 'Today', desc: 'Must be done today' },
     { value: 'this_week', label: 'This week', desc: 'Due within the next few days' },
-    { value: 'this_sprint', label: 'This sprint', desc: 'Due before the sprint ends' },
-    { value: 'after_sprint', label: 'After this sprint / No deadline', desc: 'Can wait or has no hard deadline' },
+    { value: 'next_week', label: 'Next week', desc: 'Due within the following week' },
+    { value: 'after_next_week', label: 'After next week / No deadline', desc: 'Can wait or has no hard deadline' },
   ];
 
   const handleSave = () => {
@@ -918,8 +916,8 @@ const DeadlineBadge = ({ deadline }) => {
   const config = {
     today: { label: 'TODAY', color: colors.urgent, bg: colors.urgent + '20' },
     this_week: { label: 'THIS WEEK', color: colors.warning, bg: colors.warning + '20' },
-    this_sprint: { label: 'THIS SPRINT', color: colors.textSecondary, bg: colors.bgPrimary },
-    after_sprint: null,
+    next_week: { label: 'NEXT WEEK', color: colors.textSecondary, bg: colors.bgPrimary },
+    after_next_week: null,
   };
 
   const badge = config[deadline];
@@ -998,8 +996,8 @@ const TaskCard = ({ task, onComplete, onUpdate, onDelete, onResetTier, dragHandl
   const deadlineOptions = [
     { value: 'today', label: 'Today', desc: 'Must be done today' },
     { value: 'this_week', label: 'This week', desc: 'Due within the next few days' },
-    { value: 'this_sprint', label: 'This sprint', desc: 'Due before the sprint ends' },
-    { value: 'after_sprint', label: 'After this sprint / No deadline', desc: 'Can wait or has no hard deadline' },
+    { value: 'next_week', label: 'Next week', desc: 'Due within the following week' },
+    { value: 'after_next_week', label: 'After next week / No deadline', desc: 'Can wait or has no hard deadline' },
   ];
 
   return (
@@ -2540,25 +2538,33 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
 
   // Group tasks by date
   const groupTasksByDate = (tasks) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 7);
+    // Group tasks by their completion date (archivedAt)
+    const groups = {};
 
-    return {
-      today: tasks.filter(t => new Date(t.archivedAt) >= today),
-      yesterday: tasks.filter(t => {
-        const archived = new Date(t.archivedAt);
-        return archived >= yesterday && archived < today;
-      }),
-      thisWeek: tasks.filter(t => {
-        const archived = new Date(t.archivedAt);
-        return archived >= weekAgo && archived < yesterday;
-      }),
-      older: tasks.filter(t => new Date(t.archivedAt) < weekAgo),
-    };
+    tasks.forEach(task => {
+      const date = new Date(task.archivedAt);
+      // Format as "Month Day, Year" (e.g., "January 16, 2026")
+      const dateKey = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(task);
+    });
+
+    // Sort groups by date (most recent first)
+    const sortedGroups = Object.entries(groups)
+      .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
+      .reduce((acc, [date, tasks]) => {
+        acc[date] = tasks;
+        return acc;
+      }, {});
+
+    return sortedGroups;
   };
 
   const groupedTasks = groupTasksByDate(archivedTasks);
@@ -2566,22 +2572,15 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
   const ArchivedTaskCard = ({ task }) => {
     const [isHovered, setIsHovered] = useState(false);
 
-    const formatDateTime = (date) => {
+    const formatTime = (date) => {
       const d = new Date(date);
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-      const dayName = days[d.getDay()];
-      const monthName = months[d.getMonth()];
-      const dayNum = d.getDate();
-
       const time = d.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
       });
 
-      return `${dayName}, ${monthName} ${dayNum} - ${time}`;
+      return time;
     };
 
     return (
@@ -2629,7 +2628,7 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
               })()}
             </div>
             <div style={{ color: colors.textSecondary, fontSize: '13px' }}>
-              Completed: {formatDateTime(task.completedAt)}
+              Completed: {formatTime(task.completedAt)}
             </div>
           </div>
         </div>
@@ -2883,10 +2882,9 @@ const ArchiveScreen = ({ archivedTasks, setArchivedTasks, onRestore, onPermanent
           </div>
         ) : (
           <>
-            <DateGroupSection title="Today" tasks={groupedTasks.today} />
-            <DateGroupSection title="Yesterday" tasks={groupedTasks.yesterday} />
-            <DateGroupSection title="This Week" tasks={groupedTasks.thisWeek} />
-            <DateGroupSection title="Older" tasks={groupedTasks.older} />
+            {Object.entries(groupedTasks).map(([date, tasks]) => (
+              <DateGroupSection key={date} title={date} tasks={tasks} />
+            ))}
           </>
         )}
       </div>
@@ -2933,8 +2931,8 @@ const DailyReviewModal = ({ tasks, onComplete, onReAdd, onDismiss, onDismissAll 
   const deadlineOptions = [
     { value: 'today', label: 'Today', desc: 'Must be done today' },
     { value: 'this_week', label: 'This week', desc: 'Due within the next few days' },
-    { value: 'this_sprint', label: 'This sprint', desc: 'Due before the sprint ends' },
-    { value: 'after_sprint', label: 'After this sprint / No deadline', desc: 'Can wait or has no hard deadline' },
+    { value: 'next_week', label: 'Next week', desc: 'Due within the following week' },
+    { value: 'after_next_week', label: 'After next week / No deadline', desc: 'Can wait or has no hard deadline' },
   ];
 
   if (remainingTasks.length === 0) {
@@ -3254,11 +3252,22 @@ export default function PriorityApp() {
 
       if (savedTasks) {
         const parsed = JSON.parse(savedTasks);
-        // Restore Date objects
-        const restored = parsed.map(t => ({
-          ...t,
-          createdAt: new Date(t.createdAt),
-        }));
+        // Restore Date objects and migrate old deadline values
+        const restored = parsed.map(t => {
+          // Migrate old deadline values to new ones
+          let migratedDeadline = t.deadline;
+          if (t.deadline === 'this_sprint') {
+            migratedDeadline = 'next_week';
+          } else if (t.deadline === 'after_sprint') {
+            migratedDeadline = 'after_next_week';
+          }
+
+          return {
+            ...t,
+            deadline: migratedDeadline,
+            createdAt: new Date(t.createdAt),
+          };
+        });
 
         // If it's a new day and there are tasks, show review modal
         if (isNewDay && restored.length > 0 && hasVisited) {
@@ -3458,20 +3467,30 @@ export default function PriorityApp() {
       const tasksInTargetTier = [...targetTierTasks];
       tasksInTargetTier.splice(dropIndex, 0, activeTask);
 
-      // Find the new position index for the moved task in the target tier
+      // Assign userOrder to all tasks in the target tier to maintain exact positions
       const baseTimestamp = Date.now();
-      const movedTaskNewIndex = tasksInTargetTier.findIndex(t => t.id === activeTask.id);
+      const userOrderMap = {};
+      tasksInTargetTier.forEach((task, index) => {
+        userOrderMap[task.id] = baseTimestamp + index;
+      });
 
-      console.log('  Moved task new index in target tier:', movedTaskNewIndex);
+      console.log('  UserOrder assignments for target tier:', userOrderMap);
 
-      // Update only the moved task: set manualTier and userOrder
+      // Update all tasks: set manualTier for moved task, assign userOrder to all in target tier
       const updatedTasks = tasks.map(task => {
         if (task.id === activeTask.id) {
-          // The moved task gets manualTier and userOrder
+          // The moved task gets manualTier, userOrder, and manuallyReordered flag
           return {
             ...task,
             manualTier: toTier,
-            userOrder: baseTimestamp + movedTaskNewIndex,
+            userOrder: userOrderMap[task.id],
+            manuallyReordered: true,
+          };
+        } else if (userOrderMap.hasOwnProperty(task.id)) {
+          // Other tasks in target tier get userOrder (to maintain positions) but NOT manuallyReordered
+          return {
+            ...task,
+            userOrder: userOrderMap[task.id],
           };
         }
         return task;
