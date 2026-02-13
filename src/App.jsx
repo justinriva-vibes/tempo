@@ -154,19 +154,21 @@ function rankTasks(tasks) {
       return tierDiff;
     }
 
-    // Secondary: Check if any task has userOrder (manual positioning)
-    const aHasUserOrder = a.userOrder != null;
-    const bHasUserOrder = b.userOrder != null;
+    // A userOrder is only valid if the task existed when the drag happened.
+    // If createdAt is newer than userOrder, the task was added after the reorder — ignore its userOrder.
+    const aOrderValid = a.userOrder != null && new Date(a.createdAt) <= a.userOrder;
+    const bOrderValid = b.userOrder != null && new Date(b.createdAt) <= b.userOrder;
 
-    // If both have userOrder, sort by userOrder (manual positioning overrides score)
-    if (aHasUserOrder && bHasUserOrder) {
-      console.log(`  → Both have userOrder, sorting by userOrder: ${a.userOrder} vs ${b.userOrder}`);
+    // Secondary: If both have a valid userOrder, respect the manual ordering regardless of score
+    if (aOrderValid && bOrderValid) {
+      console.log(`  → Both have valid userOrder, sorting by userOrder: ${a.userOrder} vs ${b.userOrder}`);
       return a.userOrder - b.userOrder;
     }
 
-    // Tertiary: Neither (or only one) has userOrder, sort by score (descending - higher scores first)
+    // Tertiary: Sort by score (descending). Applies when one or both tasks lack a valid userOrder
+    // (i.e. at least one was added after the last reorder).
     if (b.score !== a.score) {
-      console.log(`  → No userOrder, sorting by score: ${b.score} vs ${a.score}`);
+      console.log(`  → Sorting by score: ${b.score} vs ${a.score}`);
       return b.score - a.score;
     }
 
