@@ -164,17 +164,7 @@ function rankTasks(tasks) {
       return a.userOrder - b.userOrder;
     }
 
-    // If only one has userOrder, it comes first (manual positioning takes priority)
-    if (aHasUserOrder && !bHasUserOrder) {
-      console.log(`  → Only A has userOrder, A comes first`);
-      return -1;
-    }
-    if (!aHasUserOrder && bHasUserOrder) {
-      console.log(`  → Only B has userOrder, B comes first`);
-      return 1;
-    }
-
-    // Tertiary: Neither has userOrder, sort by score (descending - higher scores first)
+    // Tertiary: Neither (or only one) has userOrder, sort by score (descending - higher scores first)
     if (b.score !== a.score) {
       console.log(`  → No userOrder, sorting by score: ${b.score} vs ${a.score}`);
       return b.score - a.score;
